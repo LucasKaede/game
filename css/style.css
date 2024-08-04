@@ -43,3 +43,12 @@ button:hover {
     font-size: 18px;
     line-height: 1.6;
 }
+
+#imageContainer {
+    margin-bottom: 20px;
+}
+
+#storyImage {
+    max-width: 100%;
+    height: auto;
+}
