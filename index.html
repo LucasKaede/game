@@ -3,19 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>インタラクティブストーリー</title>
-    <link rel="stylesheet" href="https://lucaskaede.github.io/game/css/style.css">
+    <title>入力フォームとAA</title>
+    <style>
+        :root {
+            --input-width: 100px; /* フォームの幅を変えるための変数 */
+            --input-height: 50px; /* フォームの高さを変えるための変数 */
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-top: 50px;
+        }
+        .intro {
+            text-align: left;
+            width: 100%; /* 親要素の幅に合わせる */
+        }
+        .form-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .form-container {
+            display: flex;
+            align-items: flex-end; /* 子要素を下に揃える */
+        }
+        .form-container input {
+            margin-right: 10px; /* フォームとAAの間のスペース */
+            width: var(--input-width); /* フォームの幅を変数で指定 */
+            height: var(--input-height); /* フォームの高さを変数で指定 */
+            background-color: black; /* フォームの背景色を黒に設定 */
+            font-size: 50px; /* フォーム内の文字サイズを指定 */
+            color: white; /* フォーム内の文字色を白に設定 */
+            border: 1px solid #ccc; /* フォームの境界線 */
+            padding: 5px; /* フォーム内のパディング */
+        }
+        .form-container span {
+            align-self: flex-end; /* span要素を下に配置 */
+        }
+        .form-container input::placeholder {
+            color: gray; /* プレースホルダーの色を灰色に設定 */
+        }
+        #storyImage {
+            max-width: 100%; /* 画像の最大幅を親要素に合わせる */
+            height: auto; /* 画像の高さを自動調整 */
+        }
+        #story {
+            margin-top: 20px; /* ストーリー表示エリアの上部マージン */
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>インタラクティブストーリー</h1>
         <div id="imageContainer">
             <img id="storyImage" src="" alt="ストーリー画像">
         </div>
-        <input type="text" id="inputField" maxlength="4" placeholder="4文字を入力">
-        <button onclick="generateStory()">ストーリーを生成</button>
-        <div id="story"></div>
+        <div class="form-wrapper">
+            <div class="intro">そして僕は彼女を</div>
+            <div class="form-container">
+                <input type="text" id="inputField" maxlength="2" placeholder="" size="1">
+                <span>した</span>
+            </div>
+            <button onclick="generateStory()">生成</button>
+            <div id="story"></div>
+        </div>
     </div>
-    <script src="https://lucaskaede.github.io/game/js/script.js"></script>
 </body>
 </html>
