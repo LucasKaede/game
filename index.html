@@ -1,4 +1,6 @@
-<html lang="ja"><head>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>そして僕は彼女を◯◯した</title>
@@ -15,7 +17,8 @@
             justify-content: center;
             margin: 0;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: black; /* 背景色を黒に設定 */
+            color: white; /* テキストの色を白に設定 */
         }
         .image-container {
             margin-bottom: 20px;
@@ -52,6 +55,16 @@
             margin-top: 20px; /* ストーリー表示エリアの上部マージン */
             text-align: center; /* テキストを中央揃え */
         }
+        button {
+            background-color: black; /* ボタンの背景色を黒に設定 */
+            color: white; /* ボタンの文字色を白に設定 */
+            border: 1px solid white; /* ボタンの境界線を白に設定 */
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #333; /* ボタンをホバーしたときの背景色を少し明るく設定 */
+        }
     </style>
 </head>
 <body>
@@ -69,6 +82,5 @@
     <div id="story"></div>
 
     <script src="https://lucaskaede.github.io/game/js/script.js"></script>
-
-
-</body></html>
+</body>
+</html>
