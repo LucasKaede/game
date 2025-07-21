@@ -1,1 +1,19 @@
 
+{
+  "/game/udr/page1.html": {
+    "text": "ピンポーン。\n\n深夜4時。眠れずにベッドの中で目を閉じていたとき、突然インターホンが鳴った。\nこんな時間に誰かが来るはずがない。明らかにおかしい。\n\n玄関へ向かう前に、私が手に取ったものは︱︱",
+    "background": "backgrounds/door_at_night.jpg"
+  },
+  "/game/udr/knife.html": {
+    "text": "私は台所に向かった。\n迷わず包丁を手に取る。震える手が刃を握るたび、冷たさが現実を叩きつけてくる。\n扉の向こうの気配はまだ消えていない。",
+    "background": "backgrounds/kitchen_dark.jpg"
+  },
+  "/game/udr/escape.html": {
+    "text": "私は音を立てぬよう静かに窓辺へと向かい、鍵を外した。\n背後から何かの気配が追いかけてくるのを感じながら、私は飛び出した。深夜の路地へ。",
+    "background": "backgrounds/road_escape.jpg"
+  },
+  "/game/udr/scream.html": {
+    "text": "私は思わず叫んでいた。\n助けを呼ぶ声は深夜の空気に吸い込まれ、誰の耳にも届かなかった。",
+    "background": "backgrounds/screaming_dark.jpg"
+  }
+}
