@@ -1,39 +1,79 @@
-// keyframesをJSで動的に追加（左から右にめくる開くアニメーション）
-const style = document.createElement("style");
-style.textContent = `
-@keyframes flipOpenLeftToRight {
+// フリップアニメーション用スタイルを動的に追加
+const flipStyle = document.createElement("style");
+flipStyle.textContent = `
+@keyframes flipPageOut {
   from {
-    transform: rotateY(90deg);
-    opacity: 0.2;
-    box-shadow: -30px 0 60px rgba(0,0,0,0.5); /* よりリアルな影 */
-  }
-  to {
     transform: rotateY(0deg);
     opacity: 1;
     box-shadow: none;
+    z-index: 1;
   }
-}
-`;
-document.head.appendChild(style);
+  to {
+    transform: rotateY(-90deg);
+    opacity: 0.3;
+    box-shadow: 15px 0 40px rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+}`;
+document.head.appendChild(flipStyle);
 
-window.addEventListener("load", () => {
+// ページフリップ後に遷移する関数
+function animatePageTransitionAndNavigate(targetUrl) {
   const container = document.getElementById("novel-container");
-  if (!container) return;
+  if (!container) {
+    window.location.href = targetUrl;
+    return;
+  }
 
-  // ページに奥行きを与える
-  document.body.style.perspective = "1200px";
-  document.body.style.overflowX = "hidden"; // 横はみ出し防止
+  container.style.transformOrigin = "right center";
+  container.style.position = "relative";
+  container.style.zIndex = "1";
+  document.body.style.perspective = "1500px";
 
-  container.style.transformOrigin = "right center";      // 右端を軸に
-  container.style.transform = "rotateY(90deg)";          // 初期状態は右に立っている
-  container.style.opacity = "0.2";
-  container.style.position = "relative";                 // z-index効かせるため
-  container.style.zIndex = "10";
+  // アニメ開始
+  container.style.animation = "flipPageOut 0.8s forwards ease-in";
 
-  container.style.animation = "flipOpenLeftToRight 0.8s forwards ease-out";
-
-  // アニメ終了後に z-index 戻す
+  // アニメ完了後に遷移
   container.addEventListener("animationend", () => {
-    container.style.zIndex = "1";
+    window.location.href = targetUrl;
   }, { once: true });
-});
+}
+
+// next-page ボタン用に、遷移関数を差し替え
+const nextPageButton = document.getElementById('next-page');
+const inputBox = document.getElementById('input-box');
+
+if (nextPageButton && inputBox) {
+  nextPageButton.addEventListener('click', (e) => {
+    const input = inputBox.value.trim();
+    if (input === '') return;
+
+    const routes = [
+      { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
+      { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
+      { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
+    ];
+
+    let matchedUrl = null;
+
+    for (const route of routes) {
+      for (const keyword of route.keywords) {
+        if (input.includes(keyword)) {
+          matchedUrl = route.url;
+          break;
+        }
+      }
+      if (matchedUrl) break;
+    }
+
+    if (!matchedUrl) {
+      matchedUrl = 'not-found.html';
+    }
+
+    // デフォルトの即時遷移を防止（競合回避）
+    e.preventDefault();
+
+    // 遷移用アニメーション実行
+    animatePageTransitionAndNavigate(matchedUrl);
+  });
+}
