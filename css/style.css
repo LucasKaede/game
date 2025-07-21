@@ -3,31 +3,32 @@ html, body {
   padding: 0;
   width: 100vw;
   height: 100vh;
-  background-color: black;
+  background: linear-gradient(to bottom, #000000, #111111 70%, #0a0a0a);
   display: flex;
-  justify-content: center;   /* 横方向は中央 */
-  align-items: flex-start;   /* 縦方向は上寄せ */
-}
-
-body, input, button, div, span, p {
-  color: white;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: "Yu Mincho", "游明朝", serif;
+  color: #f8f8f8;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
 #novel-container {
   width: 375px;
-  height: 90vh;  /* 画面の90%の高さに変更 */
-  background-color: black;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  height: 90vh;
+  background-color: #000;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   margin-top: 20px;
+  overflow: hidden;
 }
 
 #background {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-size: cover;
-  background-position: center;
+  background: radial-gradient(circle at center, rgba(30, 30, 30, 0.3), black);
+  background-blend-mode: darken;
   z-index: 0;
 }
 
@@ -47,6 +48,8 @@ body, input, button, div, span, p {
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
+  color: #e0e0e0;
+  text-shadow: 0 0 2px rgba(255, 0, 0, 0.2);
 }
 
 #input-area {
@@ -70,21 +73,18 @@ body, input, button, div, span, p {
   font-size: 16px;
 }
 
-#next-page {
+#next-page, #back-page {
   padding: 5px 10px;
   background: transparent;
   border: 1px solid white;
   color: white;
   cursor: pointer;
   font-size: 16px;
+  transition: all 0.2s ease-in-out;
 }
-#back-page {
-  padding: 5px 10px;
-  background: transparent;
-  border: 1px solid white;
-  color: white;
-  cursor: pointer;
-  font-size: 16px;
+#next-page:hover, #back-page:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.4);
 }
 
 .tight {
