@@ -71,3 +71,9 @@ body, input, button, div, span, p {
   padding: 5px 10px;
   cursor: pointer;
 }
+
+.tight {
+  display: inline-block;
+  line-height: 1;
+  letter-spacing: -0.2em;  /* 横間も詰める */
+}
