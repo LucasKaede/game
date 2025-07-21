@@ -169,7 +169,8 @@ function handleNextPageTransition() {
   if (input === '') return;
   const routes = [
     { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
-    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
+    { keywords: ['ライト','懐中電灯','ランプ'], url: '/game/udr/light.html },
+    { keywords: ['居留守','いるす'], url: '/game/udr/irusu.html' }
     { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
   ];
   let matched = false;
