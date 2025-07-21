@@ -24,7 +24,7 @@ function runFlipAnimationReverse() {
   if (!container) return;
 
   container.style.transformOrigin = "right center";
-  container.style.transform = "rotateY(-90deg)";
+  container.style.transform = "rotateY(90deg)";
   container.style.opacity = "0.3";
   container.style.position = "relative"; // z-indexを効かせるためposition指定
   container.style.zIndex = "10";
