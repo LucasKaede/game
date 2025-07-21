@@ -21,13 +21,28 @@ fetch("/game/js/noveltext.json")
       background.style.backgroundImage = "none";
     }
 
-    typeWriter();
+    // アニメーションが完了したらtypeWriterを呼ぶ
+    waitForAnimationAndStartText();
   })
   .catch(err => {
     console.error("テキストの読み込みに失敗しました", err);
     novelText = "（テキスト読み込み失敗）";
-    typeWriter();
+    waitForAnimationAndStartText();
   });
+
+function waitForAnimationAndStartText() {
+  const container = document.getElementById("novel-container");
+
+  // ページ戻りのアニメーションがあれば待機、なければすぐ開始
+  const navType = performance.getEntriesByType("navigation")[0]?.type;
+  if (navType === "back_forward") {
+    container.addEventListener("animationend", () => {
+      typeWriter();
+    }, { once: true });
+  } else {
+    typeWriter();
+  }
+}
 
 // タイプライター風の文字表示関数
 function typeWriter() {
