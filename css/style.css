@@ -15,7 +15,7 @@ body, input, button, div, span, p {
 
   #novel-container {
     width: 375px;
-    height: 428px;
+    height: 390px;
     background-color: black;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     position: relative;
