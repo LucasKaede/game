@@ -1,6 +1,7 @@
 const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
 const nextPageButton = document.getElementById('next-page');
+const backPageButton = document.getElementById('back-page');  // 追加
 const background = document.getElementById('background');
 
 let novelText = null;
@@ -101,4 +102,9 @@ nextPageButton.addEventListener('click', () => {
   if (!matched) {
     window.location.href = 'not-found.html';
   }
+});
+
+// 「戻る」ボタンの遷移設定
+backPageButton.addEventListener('click', () => {
+  window.location.href = 'https://lucaskaede.github.io/game/retry.html';
 });
