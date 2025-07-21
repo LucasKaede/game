@@ -55,7 +55,7 @@ body, input, button, div, span, p {
   position: absolute;
   bottom: 0px;  /* ← ここを小さくするほど下に寄る */
   left: 10px;
-  width: calc(100% - 30px);
+  width: calc(100% - 60px);
   z-index: 2;
   padding: 5px;
   background: black;
