@@ -1,7 +1,7 @@
-// keyframesをJSで動的に追加（左から右にめくって開く／閉じる）
+// アニメーション用スタイルを動的に追加
 const style = document.createElement("style");
 style.textContent = `
-@keyframes flipOpenLeftToRight {
+@keyframes flipOpenRightToLeft {
   from {
     transform: rotateY(-90deg);
     opacity: 0.3;
@@ -23,25 +23,31 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-const container = document.getElementById("novel-container");
-
-// ★ 左端を軸に、-90度からスタート（左から右に開く動き）
-container.style.transformOrigin = "left center";
-container.style.transform = "rotateY(-90deg)";
-container.style.opacity = "0.3";
-
-// ページ読み込み時に開くアニメーションを開始
+// ページ読み込み時に戻ってきた場合の開くアニメーション
 window.addEventListener("load", () => {
-  container.style.animation = "flipOpenLeftToRight 0.8s forwards ease-out";
+  const navType = performance.getEntriesByType("navigation")[0]?.type;
+  if (navType === "back_forward") {
+    const container = document.getElementById("novel-container");
+    container.style.transformOrigin = "left center";
+    container.style.transform = "rotateY(-90deg)";
+    container.style.opacity = "0.3";
+    document.body.style.perspective = "1500px";
+    container.style.animation = "flipOpenRightToLeft 0.8s forwards ease-out";
+  }
 });
 
-// ボタン押下で閉じる（右方向に捲る）
+// 次ページへ行くときの閉じるアニメーション（左から右）
 document.getElementById("next-page").addEventListener("click", () => {
-  container.style.transformOrigin = "right center"; // ★右端を軸に回転して閉じる
+  const container = document.getElementById("novel-container");
+  container.style.border = "1px solid white";
+  if (!document.body.style.perspective) {
+    document.body.style.perspective = "1500px";
+  }
+  container.style.transformOrigin = "right center";
   container.style.animation = "flipCloseLeftToRight 0.8s forwards ease-out";
 
   container.addEventListener("animationend", () => {
-    console.log("ページを左から右にめくって閉じるアニメーション終了");
-    // ここで次ページへ遷移など
+    console.log("左から右にページをめくるアニメーション終了");
+    // ※ここでページ遷移など行うなら、typewriterや入力部分のJSに組み込んでください
   }, { once: true });
 });
