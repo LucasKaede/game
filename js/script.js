@@ -1,38 +1,23 @@
 // フリップアニメーション用スタイルを動的に追加
+// 動的に追加するCSS（右軸でページを開く）
 const style = document.createElement("style");
 style.textContent = `
 @keyframes flipOpenRightToLeft {
   from {
-    transform: rotateY(-90deg);
+    transform: rotateY(90deg); /* 右向き（閉じてる状態） */
     opacity: 0.3;
-    box-shadow: -15px 0 40px rgba(0,0,0,0.5);
+    box-shadow: -15px 0 40px rgba(0,0,0,0.5); /* 左側に影 */
     z-index: 10;
   }
   to {
-    transform: rotateY(0deg);
+    transform: rotateY(0deg);   /* 正面（開いている状態） */
     opacity: 1;
     box-shadow: none;
     z-index: 1;
   }
-}
-@keyframes flipOpenRightToLeftReverse {
-  from {
-    transform: rotateY(90deg);
-    opacity: 0.3;
-    box-shadow: 15px 0 40px rgba(0,0,0,0.5);
-    z-index: 10;
-  }
-  to {
-    transform: rotateY(0deg);
-    opacity: 1;
-    box-shadow: none;
-    z-index: 1;
-  }
-}
-`;
+}`;
 document.head.appendChild(style);
 
-// アニメーション実行用関数（コールバック付き）
 function runFlipAnimationOpen(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
@@ -40,36 +25,16 @@ function runFlipAnimationOpen(callback) {
     return;
   }
 
-  container.style.transformOrigin = "right center";
-  container.style.transform = "rotateY(-90deg)";
+  container.style.transformOrigin = "right center";  // 右端を軸に
+  container.style.transform = "rotateY(90deg)";       // 右に倒れている（閉じている）状態
   container.style.opacity = "0.3";
   container.style.position = "relative";
   container.style.zIndex = "10";
 
   document.body.style.perspective = "1500px";
+
+  // 90度から0度へ戻るアニメーション開始
   container.style.animation = "flipOpenRightToLeft 0.8s forwards ease-out";
-
-  container.addEventListener("animationend", () => {
-    container.style.zIndex = "1";
-    if (typeof callback === "function") callback();
-  }, { once: true });
-}
-
-function runFlipAnimationReverse(callback) {
-  const container = document.getElementById("novel-container");
-  if (!container) {
-    if (typeof callback === "function") callback();
-    return;
-  }
-
-  container.style.transformOrigin = "right center";
-  container.style.transform = "rotateY(90deg)";
-  container.style.opacity = "0.3";
-  container.style.position = "relative";
-  container.style.zIndex = "10";
-
-  document.body.style.perspective = "1500px";
-  container.style.animation = "flipOpenRightToLeftReverse 0.8s forwards ease-out";
 
   container.addEventListener("animationend", () => {
     container.style.zIndex = "1";
