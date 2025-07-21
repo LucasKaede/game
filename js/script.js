@@ -114,12 +114,11 @@ fetch("/game/js/noveltext.json")
 
 // アニメーション実行分岐
 function startAnimation() {
-  if (action === "close") {
+  if (window.location.pathname === "/game/retry.html") {
     runFlipAnimationClose(() => {
       if (novelText) typeWriter();
     });
   } else {
-    // open やそれ以外の場合は、すぐ表示
     if (novelText) typeWriter();
   }
 }
