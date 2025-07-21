@@ -10,7 +10,7 @@ let charIndex = 0;
 fetch("/game/js/noveltext.json")
   .then(response => response.json())
   .then(data => {
-    const path = window.location.pathname;
+    const path = window.location.href;
     const entry = data[path];
 
     if (entry) {
