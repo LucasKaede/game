@@ -36,7 +36,7 @@ body, input, button, div, span, p {
   top: 0;
   right: 0;
   width: 100%;
-  height: calc(100% - 60px);
+  height: calc(100% - 80px);
   padding: 10px;
   box-sizing: border-box;
   z-index: 1;
