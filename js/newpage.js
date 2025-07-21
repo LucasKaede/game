@@ -3,13 +3,13 @@ const flipStyle = document.createElement("style");
 flipStyle.textContent = `
 @keyframes flipPageOut {
   from {
-    transform: rotateY(0deg);
+    transform: rotateY(-90deg);
     opacity: 1;
     box-shadow: none;
     z-index: 1;
   }
   to {
-    transform: rotateY(-90deg);
+    transform: rotateY(0deg);
     opacity: 0.3;
     box-shadow: 15px 0 40px rgba(0,0,0,0.5);
     z-index: 10;
