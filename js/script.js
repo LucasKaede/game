@@ -1,46 +1,81 @@
-// 閉じる方向のアニメーションを動的追加
-const styleClose = document.createElement("style");
-styleClose.textContent = `
-@keyframes flipCloseRightToLeft {
+// アニメーション用CSS（開く／閉じる）を動的追加
+const style = document.createElement("style");
+style.textContent = `
+@keyframes flipOpenRightToLeft {
   from {
-    transform: rotateY(0deg);    /* 正面（開いている状態） */
+    transform: rotateY(0deg);    /* 正面（開いてる） */
     opacity: 1;
     box-shadow: none;
     z-index: 1;
   }
   to {
-    transform: rotateY(90deg);   /* 右向き（閉じている状態） */
+    transform: rotateY(90deg);   /* 横面（閉じた） */
     opacity: 0.3;
     box-shadow: -15px 0 40px rgba(0,0,0,0.5);
     z-index: 10;
   }
-}`;
-document.head.appendChild(styleClose);
+}
 
-function handleNextPageTransition(callback) {
+@keyframes flipCloseRightToLeft {
+  from {
+    transform: rotateY(90deg);   /* 横面（閉じた） */
+    opacity: 0.3;
+    box-shadow: -15px 0 40px rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+  to {
+    transform: rotateY(0deg);    /* 正面（開いた） */
+    opacity: 1;
+    box-shadow: none;
+    z-index: 1;
+  }
+}`;
+document.head.appendChild(style);
+
+// ページを開くアニメーション（正面→横面）
+function runFlipAnimationOpen(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
     if (typeof callback === "function") callback();
     return;
   }
 
-  container.style.transformOrigin = "right center"; // 右端を軸に
-  container.style.transform = "rotateY(0deg)";       // 正面（開いている状態）
+  container.style.transformOrigin = "right center";
+  container.style.transform = "rotateY(0deg)";
   container.style.opacity = "1";
   container.style.position = "relative";
   container.style.zIndex = "1";
-
   document.body.style.perspective = "1500px";
 
-  // 0度から90度へ回転して閉じるアニメーション開始
-  container.style.animation = "flipCloseRightToLeft 0.8s forwards ease-out";
+  container.style.animation = "flipOpenRightToLeft 0.8s forwards ease-out";
 
   container.addEventListener("animationend", () => {
-    container.style.zIndex = "10";  // 閉じてる状態で前面に来るイメージ
     if (typeof callback === "function") callback();
   }, { once: true });
 }
 
+// ページを閉じるアニメーション（横面→正面）
+function runFlipAnimationClose(callback) {
+  const container = document.getElementById("novel-container");
+  if (!container) {
+    if (typeof callback === "function") callback();
+    return;
+  }
+
+  container.style.transformOrigin = "right center";
+  container.style.transform = "rotateY(90deg)";
+  container.style.opacity = "0.3";
+  container.style.position = "relative";
+  container.style.zIndex = "10";
+  document.body.style.perspective = "1500px";
+
+  container.style.animation = "flipCloseRightToLeft 0.8s forwards ease-out";
+
+  container.addEventListener("animationend", () => {
+    container.style.zIndex = "1";
+    if (typeof callback === "function") callback();
+  }, { once: true });
+}
 
 // DOM取得
 const textArea = document.getElementById('text-area');
@@ -75,17 +110,11 @@ fetch("/game/js/noveltext.json")
     waitForAnimationAndStartText();
   });
 
+// 表示開始前に閉じるアニメーション
 function waitForAnimationAndStartText() {
-  const container = document.getElementById("novel-container");
-  const navType = performance.getEntriesByType("navigation")[0]?.type;
-
-  if (navType === "back_forward") {
-    container?.addEventListener("animationend", () => {
-      if (novelText) typeWriter();
-    }, { once: true });
-  } else {
+  runFlipAnimationClose(() => {
     if (novelText) typeWriter();
-  }
+  });
 }
 
 // タイプライター関数
@@ -161,12 +190,10 @@ if (nextPageButton) {
   });
 }
 
-// 「戻る」ボタンイベント登録（閉じるアニメーション付き）
+// 「戻る」ボタン（任意：開く動作と逆の演出も付けたければ別途runFlipAnimationReverseを実装）
 if (backPageButton) {
   backPageButton.addEventListener('click', e => {
     e.preventDefault();
-    runFlipAnimationReverse(() => {
-      window.location.href = 'https://lucaskaede.github.io/game/retry.html';
-    });
+    window.location.href = 'https://lucaskaede.github.io/game/retry.html';
   });
 }
