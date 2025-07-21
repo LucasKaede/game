@@ -3,13 +3,13 @@ const style = document.createElement("style");
 style.textContent = `
 @keyframes flipOpenRightToLeft {
   from {
-    transform: rotateY(0deg);    /* 正面（開いてる） */
+    transform: rotateY(0deg);
     opacity: 1;
     box-shadow: none;
     z-index: 1;
   }
   to {
-    transform: rotateY(90deg);   /* 横面（閉じた） */
+    transform: rotateY(90deg);
     opacity: 0.3;
     box-shadow: -15px 0 40px rgba(0,0,0,0.5);
     z-index: 10;
@@ -18,13 +18,13 @@ style.textContent = `
 
 @keyframes flipCloseRightToLeft {
   from {
-    transform: rotateY(90deg);   /* 横面（閉じた） */
+    transform: rotateY(90deg);
     opacity: 0.3;
     box-shadow: -15px 0 40px rgba(0,0,0,0.5);
     z-index: 10;
   }
   to {
-    transform: rotateY(0deg);    /* 正面（開いた） */
+    transform: rotateY(0deg);
     opacity: 1;
     box-shadow: none;
     z-index: 1;
@@ -32,7 +32,7 @@ style.textContent = `
 }`;
 document.head.appendChild(style);
 
-// ページを開くアニメーション（正面→横面）
+// 開くアニメーション
 function runFlipAnimationOpen(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
@@ -54,7 +54,7 @@ function runFlipAnimationOpen(callback) {
   }, { once: true });
 }
 
-// ページを閉じるアニメーション（横面→正面）
+// 閉じるアニメーション
 function runFlipAnimationClose(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
@@ -80,8 +80,6 @@ function runFlipAnimationClose(callback) {
 // DOM取得
 const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
-const nextPageButton = document.getElementById('next-page');
-const backPageButton = document.getElementById('back-page');
 const background = document.getElementById('background');
 
 let novelText = null;
@@ -110,7 +108,7 @@ fetch("/game/js/noveltext.json")
     waitForAnimationAndStartText();
   });
 
-// 表示開始前に閉じるアニメーション
+// ページ読み込み時に閉じるアニメーション
 function waitForAnimationAndStartText() {
   runFlipAnimationClose(() => {
     if (novelText) typeWriter();
@@ -148,7 +146,7 @@ function typeWriter() {
   }
 }
 
-// 次のページ遷移処理（開くアニメーション付き）
+// ページ遷移処理（次のページへ）
 function handleNextPageTransition() {
   if (!inputBox) return;
   const input = inputBox.value.trim();
@@ -182,18 +180,18 @@ function handleNextPageTransition() {
   }
 }
 
-// 「次のページ」ボタンイベント登録
-if (nextPageButton) {
-  nextPageButton.addEventListener('click', e => {
+// ボタン共通イベント処理
+document.querySelectorAll('button[data-action]').forEach(button => {
+  button.addEventListener('click', e => {
     e.preventDefault();
-    handleNextPageTransition();
-  });
-}
+    const action = e.currentTarget.dataset.action;
 
-// 「戻る」ボタン（任意：開く動作と逆の演出も付けたければ別途runFlipAnimationReverseを実装）
-if (backPageButton) {
-  backPageButton.addEventListener('click', e => {
-    e.preventDefault();
-    window.location.href = 'https://lucaskaede.github.io/game/retry.html';
+    if (action === 'open') {
+      handleNextPageTransition();
+    } else if (action === 'close') {
+      runFlipAnimationOpen(() => {
+        window.location.href = 'https://lucaskaede.github.io/game/retry.html';
+      });
+    }
   });
-}
+});
