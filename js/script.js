@@ -154,7 +154,7 @@ function typeWriter() {
   }
 }
 
-// ページ遷移（次のページへ）
+// ページ遷移（次のページへ）※アニメーションあり
 function handleNextPageTransition() {
   if (!inputBox) return;
   const input = inputBox.value.trim();
@@ -188,10 +188,39 @@ function handleNextPageTransition() {
   }
 }
 
-// ボタン押下イベント（open のときだけ有効）
+// 🔽 アニメーションなしで単純遷移する処理
+function handlePlainTransition() {
+  if (!inputBox) return;
+  const input = inputBox.value.trim();
+  if (input === '') return;
+
+  // 例として "スキップ" などに対応
+  const plainRoutes = [
+    { keywords: ['スキップ', '次'], url: '/game/udr/skip.html' }
+  ];
+
+  for (const route of plainRoutes) {
+    for (const keyword of route.keywords) {
+      if (input.includes(keyword)) {
+        window.location.href = route.url; // アニメーションなし
+        return;
+      }
+    }
+  }
+
+  // 該当しなければnot-foundへ（こちらもアニメなし）
+  window.location.href = 'not-found.html';
+}
+
+// ボタン押下イベント
 if (action === "open") {
   button.addEventListener("click", e => {
     e.preventDefault();
-    handleNextPageTransition();
+    handleNextPageTransition(); // アニメーションあり
+  });
+} else if (action === "plain") {
+  button.addEventListener("click", e => {
+    e.preventDefault();
+    handlePlainTransition(); // アニメーションなし
   });
 }
