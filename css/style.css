@@ -1,13 +1,14 @@
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  display: flex;
+  align-items: flex-start; /* ← 上寄せに変更 */
+  justify-content: center; /* ← 横は中央寄せのまま */
+}
+
 
 body, input, button, div, span, p {
   color: white;
@@ -19,6 +20,8 @@ body, input, button, div, span, p {
     background-color: black;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     position: relative;
+　  margin-top: 20px; /* ← 画面の上から少し下げたい時だけ */
+}
   }
 
 #background {
