@@ -28,33 +28,10 @@ function runFlipAnimation() {
 
 // ページ表示イベント
 window.addEventListener("pageshow", () => {
-  console.log("pageshow fired");
+  runFlipAnimation();
 
-  const isBack = sessionStorage.getItem("cameFromBack") === "true";
-  console.log("戻り操作判定:", isBack);
-
-  if (isBack) {
-    runFlipAnimation();
-
-    // 遅延でtypeWriter起動（定義済みかつJSON取得後に起動されるよう script.js 側でも工夫）
-    window.startTyping = () => {
-      if (typeof typeWriter === "function") {
-        setTimeout(() => typeWriter(), 850);
-      }
-    };
-  } else {
-    window.startTyping = () => {
-      if (typeof typeWriter === "function") {
-        typeWriter();
-      }
-    };
+  // 遅延でタイプライター起動（typeWriterはscript.js側で定義されている前提）
+  if (typeof typeWriter === "function") {
+    setTimeout(() => typeWriter(), 850);
   }
-
-  // 次回は false 扱い
-  sessionStorage.setItem("cameFromBack", "false");
-});
-
-// ページ遷移時（このページからどこかに行くとき）
-window.addEventListener("beforeunload", () => {
-  sessionStorage.setItem("cameFromBack", "true");
 });
