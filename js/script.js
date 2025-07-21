@@ -1,46 +1,46 @@
-// フリップアニメーション用スタイルを動的に追加
-// 動的に追加するCSS（右軸でページを開く）
-const style = document.createElement("style");
-style.textContent = `
-@keyframes flipOpenRightToLeft {
+// 閉じる方向のアニメーションを動的追加
+const styleClose = document.createElement("style");
+styleClose.textContent = `
+@keyframes flipCloseRightToLeft {
   from {
-    transform: rotateY(90deg); /* 右向き（閉じてる状態） */
-    opacity: 0.3;
-    box-shadow: -15px 0 40px rgba(0,0,0,0.5); /* 左側に影 */
-    z-index: 10;
-  }
-  to {
-    transform: rotateY(0deg);   /* 正面（開いている状態） */
+    transform: rotateY(0deg);    /* 正面（開いている状態） */
     opacity: 1;
     box-shadow: none;
     z-index: 1;
   }
+  to {
+    transform: rotateY(90deg);   /* 右向き（閉じている状態） */
+    opacity: 0.3;
+    box-shadow: -15px 0 40px rgba(0,0,0,0.5);
+    z-index: 10;
+  }
 }`;
-document.head.appendChild(style);
+document.head.appendChild(styleClose);
 
-function runFlipAnimationOpen(callback) {
+function runFlipAnimationClose(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
     if (typeof callback === "function") callback();
     return;
   }
 
-  container.style.transformOrigin = "right center";  // 右端を軸に
-  container.style.transform = "rotateY(90deg)";       // 右に倒れている（閉じている）状態
-  container.style.opacity = "0.3";
+  container.style.transformOrigin = "right center"; // 右端を軸に
+  container.style.transform = "rotateY(0deg)";       // 正面（開いている状態）
+  container.style.opacity = "1";
   container.style.position = "relative";
-  container.style.zIndex = "10";
+  container.style.zIndex = "1";
 
   document.body.style.perspective = "1500px";
 
-  // 90度から0度へ戻るアニメーション開始
-  container.style.animation = "flipOpenRightToLeft 0.8s forwards ease-out";
+  // 0度から90度へ回転して閉じるアニメーション開始
+  container.style.animation = "flipCloseRightToLeft 0.8s forwards ease-out";
 
   container.addEventListener("animationend", () => {
-    container.style.zIndex = "1";
+    container.style.zIndex = "10";  // 閉じてる状態で前面に来るイメージ
     if (typeof callback === "function") callback();
   }, { once: true });
 }
+
 
 // DOM取得
 const textArea = document.getElementById('text-area');
