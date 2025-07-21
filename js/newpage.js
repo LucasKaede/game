@@ -11,26 +11,38 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-document.getElementById("next-page").addEventListener("click", () => {
-  const container = document.getElementById("novel-container");
-
-  // 枠線を1pxの白線に（必要なら）
-  container.style.border = "1px solid white";
-
-  // 立体感用のperspectiveをbodyに設定（未設定なら）
-  if (!document.body.style.perspective) {
-    document.body.style.perspective = "1500px";
+document.addEventListener("DOMContentLoaded", () => {
+  const nextPageBtn = document.getElementById("next-page");
+  if (!nextPageBtn) {
+    console.warn("#next-page ボタンが見つかりません。");
+    return;
   }
 
-  // 右端を軸にして左から右にめくる動きにする
-  container.style.transformOrigin = "right center";
+  nextPageBtn.addEventListener("click", () => {
+    const container = document.getElementById("novel-container");
+    if (!container) {
+      console.warn("#novel-container が見つかりません。");
+      return;
+    }
 
-  // アニメーション付与
-  container.style.animation = "flipCloseLeftToRight 0.8s forwards ease-out";
+    // 枠線を1pxの白線に（必要なら）
+    container.style.border = "1px solid white";
 
-  // アニメーション終了時に次の処理
-  container.addEventListener("animationend", () => {
-    console.log("左から右にページをめくるアニメーション終了");
-    // ここでページ遷移などの処理を実装
-  }, { once: true });
+    // 立体感用のperspectiveをbodyに設定（未設定なら）
+    if (!document.body.style.perspective) {
+      document.body.style.perspective = "1500px";
+    }
+
+    // 右端を軸にして左から右にめくる動きにする
+    container.style.transformOrigin = "right center";
+
+    // アニメーション付与
+    container.style.animation = "flipCloseLeftToRight 0.8s forwards ease-out";
+
+    // アニメーション終了時に次の処理
+    container.addEventListener("animationend", () => {
+      console.log("左から右にページをめくるアニメーション終了");
+      // ここでページ遷移などの処理を実装
+    }, { once: true });
+  });
 });
