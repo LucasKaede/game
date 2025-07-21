@@ -3,7 +3,7 @@ const style = document.createElement("style");
 style.textContent = `
 @keyframes flipOpenRightToLeft {
   from {
-    transform: rotateY(90deg);
+    transform: rotateY(-90deg);
     opacity: 0.3;
     box-shadow: -15px 0 40px rgba(0,0,0,0.5);
     z-index: 10;
