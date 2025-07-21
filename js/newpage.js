@@ -1,6 +1,6 @@
 // keyframesをJSで動的に追加（左から右にめくる閉じるアニメーション）
 const style = document.createElement("style");
-style.textContent = 
+style.textContent = `
 @keyframes flipCloseLeftToRight {
   to {
     transform: rotateY(90deg);
@@ -8,7 +8,7 @@ style.textContent =
     box-shadow: 15px 0 40px rgba(0,0,0,0.5);
   }
 }
-;
+`;
 document.head.appendChild(style);
 
 document.getElementById("next-page").addEventListener("click", () => {
