@@ -81,4 +81,24 @@ nextPageButton.addEventListener('click', () => {
 
   const routes = [
     { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
-    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.htm
+    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
+    { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
+  ];
+
+  let matched = false;
+
+  for (const route of routes) {
+    for (const keyword of route.keywords) {
+      if (input.includes(keyword)) {
+        window.location.href = route.url;
+        matched = true;
+        break;
+      }
+    }
+    if (matched) break;
+  }
+
+  if (!matched) {
+    window.location.href = 'not-found.html';
+  }
+});
