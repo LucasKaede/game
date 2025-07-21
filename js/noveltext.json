@@ -1,4 +1,3 @@
-
 {
   "https://lucaskaede.github.io/game/": {
     "text": "ピンポーン。\n\n深夜4時。眠れずに作業に明け暮れていた時、突然インターホンが鳴った。\nこんな時間に誰かが来るはずがない。明らかにおかしい。\n\n玄関へ歩みを進める。\nこの時私が取ったのは︱︱",
@@ -13,7 +12,7 @@
     "background": "backgrounds/kitchen_dark.jpg"
   },
   "https://lucaskaede.github.io/game/udr/light.html": {
-    "text": "\nライト、懐中電灯\n何故だかこれが必要な気がする。\n「誰ですか？」\nという言葉をかけても返事はない。\n恐る恐るドアノブを回した。\nドアを開けた瞬間、ブレーカーが落ちた。\n懐中電灯の光がヤツを照らした。\n\nそれは赤く血で染まった女の生首だった。\n\n「あ... ああ... ！」\nあまりの恐怖に声が漏れ出てしまった。\nすると生首は私の声に反応してこちらを向いた\n「ひひひ... 」\n",
+    "text": "\nライト、懐中電灯︱︱\n何故だかこれが必要な気がする。\n「誰ですか？」\nという言葉をかけても返事はない。\n恐る恐るドアノブを回した。\nドアを開けた瞬間、ブレーカーが落ちた。\n懐中電灯の光がヤツを照らした。\n\nそれは赤く血で染まった女の生首だった。\n\n「あ... ああ... ！」\nあまりの恐怖に声が漏れ出てしまった。\nすると生首は私の声に反応してこちらを向いた\n「ひひひ... 」\n",
     "background": "backgrounds/road_escape.jpg"
   },
   "https://lucaskaede.github.io/game/udr/irusu.html": {
@@ -21,4 +20,3 @@
     "background": "backgrounds/screaming_dark.jpg"
   }
 }
-
