@@ -3,9 +3,12 @@ const inputBox = document.getElementById('input-box');
 const nextPageButton = document.getElementById('next-page');
 
 // 表示する小説テキスト（縦棒が連続する場合を考慮）
-const novelText = `闇の中から何かが這い出してくる。
-その気配に気づいた時、すでに遅かった。
-次の瞬間︱︱`;
+const novelText = `ピンポーン。
+
+深夜4時。眠れずにベッドの中で目を閉じていたとき、突然インターホンが鳴った。
+こんな時間に誰かが来るはずがない。明らかにおかしい。
+
+玄関へ向かう前に、私が手に取ったものは︱︱`;
 
 // タイピング用のインデックス
 let charIndex = 0;
