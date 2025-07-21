@@ -1,48 +1,54 @@
 // フリップアニメーション用スタイルを動的に追加
 const style = document.createElement("style");
 style.textContent = `
-@keyframes flipOpenRightToLeftReverse {
+@keyframes flipCoverFromLeft {
   from {
     transform: rotateY(-90deg);
     opacity: 0.3;
-    box-shadow: 15px 0 40px rgba(0,0,0,0.5); /* 右側に影 */
-    z-index: 10; /* アニメ中は手前に */
+    box-shadow: 30px 0 60px rgba(0, 0, 0, 0.5);
+    z-index: 10;
   }
   to {
     transform: rotateY(0deg);
     opacity: 1;
     box-shadow: none;
-    z-index: 1;  /* 最終的には通常の重なり順に戻す */
+    z-index: 10;
   }
 }
 `;
 document.head.appendChild(style);
 
-// アニメーション実行用関数（外出しで再利用可能）
-function runFlipAnimationReverse() {
+// アニメーション実行関数
+function runFlipCoverAnimation() {
   const container = document.getElementById("novel-container");
   if (!container) return;
+
+  // 重なり感を出すために上に配置
+  container.style.position = "absolute";
+  container.style.top = "0";
+  container.style.left = "0";
+  container.style.right = "0";
+  container.style.bottom = "0";
+  container.style.zIndex = "10";
 
   container.style.transformOrigin = "right center";
   container.style.transform = "rotateY(-90deg)";
   container.style.opacity = "0.3";
-  container.style.position = "relative"; // z-indexを効かせるためposition指定
-  container.style.zIndex = "10";
-
   document.body.style.perspective = "1500px";
-  container.style.animation = "flipOpenRightToLeftReverse 0.8s forwards ease-out";
 
-  // アニメ終了後にz-indexを戻す
+  container.style.animation = "flipCoverFromLeft 0.8s forwards ease-out";
+
   container.addEventListener("animationend", () => {
     container.style.zIndex = "1";
+    container.style.position = "relative"; // 戻す
   }, { once: true });
 }
 
 // ページ表示イベント
 window.addEventListener("pageshow", () => {
-  runFlipAnimationReverse();
+  runFlipCoverAnimation();
 
-  // 遅延でタイプライター起動（typeWriterはscript.js側で定義されている前提）
+  // 遅延でタイプライター起動（typeWriterは別スクリプトにある前提）
   if (typeof typeWriter === "function") {
     setTimeout(() => typeWriter(), 850);
   }
