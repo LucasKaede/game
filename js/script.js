@@ -1,4 +1,5 @@
 // アニメーション用CSS（開く／閉じる）を動的追加
+
 const style = document.createElement("style");
 style.textContent = `
 @keyframes flipOpenRightToLeft {
