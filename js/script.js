@@ -2,7 +2,10 @@ const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
 const nextPageButton = document.getElementById('next-page');
 
-const novelText = `闇の中から何かが這い出してくる。\nその気配に気づいた時、すでに遅かった。\n次の瞬間︱︱`;
+// \n を「実際の改行」として処理するには、バックスラッシュは「\\n」ではなく、実際に改行する
+const novelText = `闇の中から何かが這い出してくる。
+その気配に気づいた時、すでに遅かった。
+次の瞬間︱︱`;
 
 let charIndex = 0;
 
@@ -17,13 +20,12 @@ function typeWriter() {
       textArea.appendChild(span);
       charIndex += 2;
     } else {
-      const span = document.createElement('span');
       const char = novelText[charIndex];
 
-      // 改行文字は <br> に変換
       if (char === '\n') {
         textArea.appendChild(document.createElement('br'));
       } else {
+        const span = document.createElement('span');
         span.textContent = char;
         textArea.appendChild(span);
       }
@@ -42,6 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 nextPageButton.addEventListener('click', () => {
   if (inputBox.value.trim() !== '') {
-    window.location.href = 'next.html'; // 遷移先ページを指定
+    window.location.href = 'next.html';
   }
 });
