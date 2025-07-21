@@ -15,32 +15,24 @@ style.textContent = `
     z-index: 1;
   }
 }
+@keyframes flipOpenRightToLeftReverse {
+  from {
+    transform: rotateY(90deg);
+    opacity: 0.3;
+    box-shadow: 15px 0 40px rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+  to {
+    transform: rotateY(0deg);
+    opacity: 1;
+    box-shadow: none;
+    z-index: 1;
+  }
+}
 `;
 document.head.appendChild(style);
 
 // アニメーション実行用関数（コールバック付き）
-function runFlipAnimationReverse(callback) {
-  const container = document.getElementById("novel-container");
-  if (!container) {
-    if (typeof callback === "function") callback();
-    return;
-  }
-
-  container.style.transformOrigin = "right center";
-  container.style.transform = "rotateY(90deg)";
-  container.style.opacity = "0.3";
-  container.style.position = "relative";
-  container.style.zIndex = "10";
-
-  document.body.style.perspective = "1500px";
-  container.style.animation = "flipOpenRightToLeftReverse 0.8s forwards ease-out";
-
-  container.addEventListener("animationend", () => {
-    container.style.zIndex = "1";
-    if (typeof callback === "function") callback();
-  }, { once: true });
-}
-
 function runFlipAnimationOpen(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
@@ -63,6 +55,28 @@ function runFlipAnimationOpen(callback) {
   }, { once: true });
 }
 
+function runFlipAnimationReverse(callback) {
+  const container = document.getElementById("novel-container");
+  if (!container) {
+    if (typeof callback === "function") callback();
+    return;
+  }
+
+  container.style.transformOrigin = "right center";
+  container.style.transform = "rotateY(90deg)";
+  container.style.opacity = "0.3";
+  container.style.position = "relative";
+  container.style.zIndex = "10";
+
+  document.body.style.perspective = "1500px";
+  container.style.animation = "flipOpenRightToLeftReverse 0.8s forwards ease-out";
+
+  container.addEventListener("animationend", () => {
+    container.style.zIndex = "1";
+    if (typeof callback === "function") callback();
+  }, { once: true });
+}
+
 // DOM取得
 const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
@@ -73,7 +87,7 @@ const background = document.getElementById('background');
 let novelText = null;
 let charIndex = 0;
 
-// JSON読み込み
+// JSON読み込み＆表示制御
 fetch("/game/js/noveltext.json")
   .then(response => response.json())
   .then(data => {
