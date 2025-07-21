@@ -13,17 +13,10 @@ style.textContent = `
     box-shadow: none;
   }
 }
-@keyframes flipCloseLeftToRight {
-  to {
-    transform: rotateY(90deg);
-    opacity: 0.3;
-    box-shadow: 15px 0 40px rgba(0,0,0,0.5);
-  }
-}
 `;
 document.head.appendChild(style);
 
-// ページ読み込み時に戻ってきた場合の開くアニメーション
+// ページ読み込み時に「戻る」で来た場合のみアニメーション発火
 window.addEventListener("load", () => {
   const navType = performance.getEntriesByType("navigation")[0]?.type;
   if (navType === "back_forward") {
@@ -34,20 +27,4 @@ window.addEventListener("load", () => {
     document.body.style.perspective = "1500px";
     container.style.animation = "flipOpenRightToLeft 0.8s forwards ease-out";
   }
-});
-
-// 次ページへ行くときの閉じるアニメーション（左から右）
-document.getElementById("next-page").addEventListener("click", () => {
-  const container = document.getElementById("novel-container");
-  container.style.border = "1px solid white";
-  if (!document.body.style.perspective) {
-    document.body.style.perspective = "1500px";
-  }
-  container.style.transformOrigin = "right center";
-  container.style.animation = "flipCloseLeftToRight 0.8s forwards ease-out";
-
-  container.addEventListener("animationend", () => {
-    console.log("左から右にページをめくるアニメーション終了");
-    // ※ここでページ遷移など行うなら、typewriterや入力部分のJSに組み込んでください
-  }, { once: true });
 });
