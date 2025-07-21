@@ -83,6 +83,8 @@ function runFlipAnimationClose(callback) {
 const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
 const background = document.getElementById('background');
+const button = document.querySelector('button[data-action]');
+const action = button?.dataset?.action;
 
 let novelText = null;
 let charIndex = 0;
@@ -102,19 +104,24 @@ fetch("/game/js/noveltext.json")
       if (background) background.style.backgroundImage = "none";
     }
 
-    waitForAnimationAndStartText();
+    startAnimation();
   })
   .catch(err => {
     console.error("テキストの読み込みに失敗しました", err);
     novelText = "（テキスト読み込み失敗）";
-    waitForAnimationAndStartText();
+    startAnimation();
   });
 
-// 初期アニメーション＋テキスト描画
-function waitForAnimationAndStartText() {
-  runFlipAnimationClose(() => {
+// アニメーション実行分岐
+function startAnimation() {
+  if (action === "close") {
+    runFlipAnimationClose(() => {
+      if (novelText) typeWriter();
+    });
+  } else {
+    // open やそれ以外の場合は、すぐ表示
     if (novelText) typeWriter();
-  });
+  }
 }
 
 // タイプライター関数
@@ -182,27 +189,10 @@ function handleNextPageTransition() {
   }
 }
 
-
-// ✅ 初期アニメーションは「閉じる」だけ実行
-function waitForAnimationAndStartText() {
-  runFlipAnimationClose(() => {
-    if (novelText) typeWriter();
+// ボタン押下イベント（open のときだけ有効）
+if (action === "open") {
+  button.addEventListener("click", e => {
+    e.preventDefault();
+    handleNextPageTransition();
   });
 }
-
-
-// ボタンイベント（data-action に応じて処理）
-document.querySelectorAll('button[data-action]').forEach(button => {
-  button.addEventListener('click', e => {
-    e.preventDefault();
-    const action = e.currentTarget.dataset.action;
-
-    if (action === 'open') {
-      handleNextPageTransition();
-    } else if (action === 'close') {
-      runFlipAnimationOpen(() => {
-        window.location.href = 'https://lucaskaede.github.io/game/retry.html';
-      });
-    }
-  });
-});
