@@ -168,11 +168,11 @@ function handleNextPageTransition() {
   const input = inputBox.value.trim();
   if (input === '') return;
   const routes = [
-    { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
-    { keywords: ['ライト','懐中電灯','ランプ'], url: '/game/udr/light.html },
-    { keywords: ['居留守','いるす'], url: '/game/udr/irusu.html' }
-    { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
-  ];
+  { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
+  { keywords: ['ライト','懐中電灯','ランプ'], url: '/game/udr/light.html' },
+  { keywords: ['居留守','いるす'], url: '/game/udr/irusu.html' },
+  { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
+];
   let matched = false;
   for (const route of routes) {
     for (const keyword of route.keywords) {
