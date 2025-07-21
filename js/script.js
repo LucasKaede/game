@@ -52,9 +52,9 @@ nextPageButton.addEventListener('click', () => {
 
   // キーワードセットと遷移先の対応
   const routes = [
-    { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/udr/knife.html' },
-    { keywords: ['走る', '逃げる'], url: '/udr/escape.html' },
-    { keywords: ['叫ぶ'], url: '/udr/scream.html' }
+    { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
+    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
+    { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
   ];
 
   let matched = false;
