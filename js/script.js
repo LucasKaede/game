@@ -1,29 +1,6 @@
-const textArea = document.getElementById('text-area');
-const inputBox = document.getElementById('input-box');
-const nextPageButton = document.getElementById('next-page');
-const backPageButton = document.getElementById('back-page');
-const background = document.getElementById('background');
-
-let novelText = null;
-let charIndex = 0;
-
-// --- フリップアニメーション用スタイルを動的に追加 ---
+// フリップアニメーション用スタイルを動的に追加
 const style = document.createElement("style");
 style.textContent = `
-@keyframes flipCloseRightToLeft {
-  from {
-    transform: rotateY(0deg);
-    opacity: 1;
-    box-shadow: none;
-    z-index: 1;
-  }
-  to {
-    transform: rotateY(90deg);
-    opacity: 0.3;
-    box-shadow: 15px 0 40px rgba(0,0,0,0.5);
-    z-index: 10;
-  }
-}
 @keyframes flipOpenRightToLeftReverse {
   from {
     transform: rotateY(90deg);
@@ -41,10 +18,13 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// --- 開くアニメーション（ページ表示時に実行） ---
-function runFlipOpenAnimation() {
+// アニメーション実行用関数（コールバック付き）
+function runFlipAnimationWithCallback(callback) {
   const container = document.getElementById("novel-container");
-  if (!container) return;
+  if (!container) {
+    if (typeof callback === "function") callback();
+    return;
+  }
 
   container.style.transformOrigin = "right center";
   container.style.transform = "rotateY(90deg)";
@@ -57,32 +37,23 @@ function runFlipOpenAnimation() {
 
   container.addEventListener("animationend", () => {
     container.style.zIndex = "1";
+    if (typeof callback === "function") {
+      callback();
+    }
   }, { once: true });
 }
 
-// --- 閉じるアニメーション＋遷移（遷移先URLを受け取る） ---
-function navigateWithCloseFlip(url) {
-  const container = document.getElementById("novel-container");
-  if (!container) {
-    window.location.href = url; // コンテナなければ即遷移
-    return;
-  }
+// DOM取得
+const textArea = document.getElementById('text-area');
+const inputBox = document.getElementById('input-box');
+const nextPageButton = document.getElementById('next-page');
+const backPageButton = document.getElementById('back-page');
+const background = document.getElementById('background');
 
-  container.style.transformOrigin = "right center";
-  container.style.transform = "rotateY(0deg)";
-  container.style.opacity = "1";
-  container.style.position = "relative";
-  container.style.zIndex = "1";
+let novelText = null;
+let charIndex = 0;
 
-  document.body.style.perspective = "1500px";
-  container.style.animation = "flipCloseRightToLeft 0.8s forwards ease-in";
-
-  container.addEventListener("animationend", () => {
-    window.location.href = url;
-  }, { once: true });
-}
-
-// --- JSONからテキスト・背景を読み込み ---
+// JSONから現在のURLに対応するテキストと背景画像を読み込む
 fetch("/game/js/noveltext.json")
   .then(response => response.json())
   .then(data => {
@@ -91,10 +62,10 @@ fetch("/game/js/noveltext.json")
 
     if (entry) {
       novelText = entry.text;
-      background.style.backgroundImage = `url('${entry.background}')`;
+      if (background) background.style.backgroundImage = `url('${entry.background}')`;
     } else {
       novelText = "……（このページにはまだ物語がありません）";
-      background.style.backgroundImage = "none";
+      if (background) background.style.backgroundImage = "none";
     }
 
     waitForAnimationAndStartText();
@@ -105,28 +76,23 @@ fetch("/game/js/noveltext.json")
     waitForAnimationAndStartText();
   });
 
-// --- タイプライター起動待機 ---
 function waitForAnimationAndStartText() {
   const container = document.getElementById("novel-container");
-  if (!container) {
-    if (novelText) typeWriter();
-    return;
-  }
+  const navType = performance.getEntriesByType("navigation")[0]?.type;
 
-  // ページ開く時のアニメーション完了を待つ
-  container.addEventListener("animationend", () => {
-    if (novelText) typeWriter();
-  }, { once: true });
-
-  // もしアニメーションが既に終わってたら即起動
-  if (!container.style.animationName) {
+  if (navType === "back_forward") {
+    // 戻る操作時はアニメーション終了を待ってタイプライター開始
+    container?.addEventListener("animationend", () => {
+      if (novelText) typeWriter();
+    }, { once: true });
+  } else {
     if (novelText) typeWriter();
   }
 }
 
-// --- タイプライター関数 ---
+// タイプライター風の文字表示関数
 function typeWriter() {
-  if (!novelText) return;
+  if (!novelText || !textArea) return;
 
   if (charIndex < novelText.length) {
     const currentTwo = novelText.slice(charIndex, charIndex + 2);
@@ -155,45 +121,54 @@ function typeWriter() {
   }
 }
 
-// --- イベント登録：次ページボタン ---
-if (nextPageButton) {
-  nextPageButton.addEventListener('click', () => {
-    const input = inputBox.value.trim();
-    if (input === '') return;
+// 次のページ遷移処理（アニメーション付き）
+function handleNextPageTransition() {
+  if (!inputBox) return;
+  const input = inputBox.value.trim();
+  if (input === '') return;
 
-    const routes = [
-      { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
-      { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
-      { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
-    ];
+  const routes = [
+    { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
+    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
+    { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
+  ];
 
-    let matched = false;
+  let matched = false;
 
-    for (const route of routes) {
-      for (const keyword of route.keywords) {
-        if (input.includes(keyword)) {
-          navigateWithCloseFlip(route.url);  // アニメ実行後に遷移
-          matched = true;
-          break;
-        }
+  for (const route of routes) {
+    for (const keyword of route.keywords) {
+      if (input.includes(keyword)) {
+        runFlipAnimationWithCallback(() => {
+          window.location.href = route.url;
+        });
+        matched = true;
+        break;
       }
-      if (matched) break;
     }
+    if (matched) break;
+  }
 
-    if (!matched) {
-      navigateWithCloseFlip('not-found.html');
-    }
+  if (!matched) {
+    runFlipAnimationWithCallback(() => {
+      window.location.href = 'not-found.html';
+    });
+  }
+}
+
+// 「次のページ」ボタンイベント登録
+if (nextPageButton) {
+  nextPageButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleNextPageTransition();
   });
 }
 
-// --- イベント登録：戻るボタン ---
+// 「戻る」ボタンイベント登録
 if (backPageButton) {
-  backPageButton.addEventListener('click', () => {
-    navigateWithCloseFlip('https://lucaskaede.github.io/game/retry.html');
+  backPageButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    runFlipAnimationWithCallback(() => {
+      window.location.href = 'https://lucaskaede.github.io/game/retry.html';
+    });
   });
 }
-
-// --- ページロード時に開くアニメーション＋タイプライター起動 ---
-window.addEventListener("pageshow", () => {
-  runFlipOpenAnimation();
-});
