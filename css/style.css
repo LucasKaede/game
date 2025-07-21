@@ -20,6 +20,7 @@ body, input, button, div, span, p {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   position: relative;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 #background {
