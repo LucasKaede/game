@@ -20,7 +20,7 @@ body, input, button, div, span, p {
     background-color: black;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     position: relative;
-　  margin-top: 20px; /* ← 画面の上から少し下げたい時だけ */
+    margin-top: 20px;
 }
   }
 
