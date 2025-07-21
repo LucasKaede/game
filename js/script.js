@@ -3,7 +3,7 @@ const inputBox = document.getElementById('input-box');
 const nextPageButton = document.getElementById('next-page');
 const background = document.getElementById('background');
 
-let novelText = "（読み込み中…）";
+let novelText = null;
 let charIndex = 0;
 
 // JSONから現在のURLに対応するテキストと背景画像を読み込む
@@ -21,8 +21,7 @@ fetch("/game/js/noveltext.json")
       background.style.backgroundImage = "none";
     }
 
-    // アニメーションが完了したらtypeWriterを呼ぶ
-    waitForAnimationAndStartText();
+    waitForAnimationAndStartText(); // アニメ後にtypeWriter呼ぶ
   })
   .catch(err => {
     console.error("テキストの読み込みに失敗しました", err);
@@ -32,20 +31,22 @@ fetch("/game/js/noveltext.json")
 
 function waitForAnimationAndStartText() {
   const container = document.getElementById("novel-container");
-
-  // ページ戻りのアニメーションがあれば待機、なければすぐ開始
   const navType = performance.getEntriesByType("navigation")[0]?.type;
+
+  // 戻る遷移の場合はアニメーション終了を待つ
   if (navType === "back_forward") {
     container.addEventListener("animationend", () => {
-      typeWriter();
+      if (novelText) typeWriter();
     }, { once: true });
   } else {
-    typeWriter();
+    if (novelText) typeWriter(); // すぐ開始
   }
 }
 
 // タイプライター風の文字表示関数
 function typeWriter() {
+  if (!novelText) return;
+
   if (charIndex < novelText.length) {
     const currentTwo = novelText.slice(charIndex, charIndex + 2);
 
@@ -80,24 +81,4 @@ nextPageButton.addEventListener('click', () => {
 
   const routes = [
     { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
-    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
-    { keywords: ['叫ぶ'], url: '/game/udr/scream.html' }
-  ];
-
-  let matched = false;
-
-  for (const route of routes) {
-    for (const keyword of route.keywords) {
-      if (input.includes(keyword)) {
-        window.location.href = route.url;
-        matched = true;
-        break;
-      }
-    }
-    if (matched) break;
-  }
-
-  if (!matched) {
-    window.location.href = 'not-found.html';
-  }
-});
+    { keywords: ['走る', '逃げる'], url: '/game/udr/escape.htm
