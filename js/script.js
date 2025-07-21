@@ -7,7 +7,7 @@ let novelText = "（読み込み中…）";
 let charIndex = 0;
 
 // JSONから現在のURLに対応するテキストと背景画像を読み込む
-fetch("/game/udr/novelTexts.json")
+fetch("/game/js/noveltext.json")
   .then(response => response.json())
   .then(data => {
     const path = window.location.pathname;
