@@ -5,8 +5,8 @@ html, body {
   height: 100vh;
   background-color: black;
   display: flex;
-  align-items: flex-start; /* 上寄せ */
-  justify-content: center; /* 横中央 */
+  justify-content: center;   /* 横方向は中央 */
+  align-items: flex-start;   /* 縦方向は上寄せ */
 }
 
 body, input, button, div, span, p {
@@ -15,7 +15,7 @@ body, input, button, div, span, p {
 
 #novel-container {
   width: 375px;
-  height: 420px;
+  height: 90vh;  /* 画面の90%の高さに変更 */
   background-color: black;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   position: relative;
@@ -47,7 +47,6 @@ body, input, button, div, span, p {
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
-  margin-bottom: 20px;
 }
 
 #input-area {
