@@ -182,6 +182,15 @@ function handleNextPageTransition() {
   }
 }
 
+
+// ✅ 初期アニメーションは「閉じる」だけ実行
+function waitForAnimationAndStartText() {
+  runFlipAnimationClose(() => {
+    if (novelText) typeWriter();
+  });
+}
+
+
 // ボタンイベント（data-action に応じて処理）
 document.querySelectorAll('button[data-action]').forEach(button => {
   button.addEventListener('click', e => {
