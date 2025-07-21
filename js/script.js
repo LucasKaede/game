@@ -17,7 +17,7 @@ styleClose.textContent = `
 }`;
 document.head.appendChild(styleClose);
 
-function runFlipAnimationClose(callback) {
+function handleNextPageTransition(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
     if (typeof callback === "function") callback();
