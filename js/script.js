@@ -1,17 +1,33 @@
 const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
 const nextPageButton = document.getElementById('next-page');
+const background = document.getElementById('background');
 
-// 表示する小説テキスト（縦棒が連続する場合を考慮）
-const novelText = `ピンポーン。
-
-深夜4時。眠れずにベッドの中で目を閉じていたとき、突然インターホンが鳴った。
-こんな時間に誰かが来るはずがない。明らかにおかしい。
-
-玄関へ向かう前に、私が手に取ったものは︱︱`;
-
-// タイピング用のインデックス
+let novelText = "（読み込み中…）";
 let charIndex = 0;
+
+// JSONから現在のURLに対応するテキストと背景画像を読み込む
+fetch("/game/udr/novelTexts.json")
+  .then(response => response.json())
+  .then(data => {
+    const path = window.location.pathname;
+    const entry = data[path];
+
+    if (entry) {
+      novelText = entry.text;
+      background.style.backgroundImage = `url('${entry.background}')`;
+    } else {
+      novelText = "……（このページにはまだ物語がありません）";
+      background.style.backgroundImage = "none";
+    }
+
+    typeWriter();
+  })
+  .catch(err => {
+    console.error("テキストの読み込みに失敗しました", err);
+    novelText = "（テキスト読み込み失敗）";
+    typeWriter();
+  });
 
 // タイプライター風の文字表示関数
 function typeWriter() {
@@ -42,18 +58,11 @@ function typeWriter() {
   }
 }
 
-// ページ読み込み後に背景画像設定＆文字アニメーション開始
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('background').style.backgroundImage = "url('background.jpg')";
-  typeWriter();
-});
-
 // 入力に応じてページ遷移
 nextPageButton.addEventListener('click', () => {
   const input = inputBox.value.trim();
   if (input === '') return;
 
-  // キーワードセットと遷移先の対応
   const routes = [
     { keywords: ['包丁','ほうちょう', 'ナイフ'], url: '/game/udr/knife.html' },
     { keywords: ['走る', '逃げる'], url: '/game/udr/escape.html' },
@@ -74,6 +83,6 @@ nextPageButton.addEventListener('click', () => {
   }
 
   if (!matched) {
-    window.location.href = 'not-found.html'; // どれにも当てはまらない場合
+    window.location.href = 'not-found.html';
   }
 });
