@@ -9,7 +9,7 @@ style.textContent = `
     z-index: 10;
   }
   to {
-    transform: rotateY(90deg);
+    transform: rotateY(-90deg);
     opacity: 1;
     box-shadow: none;
     z-index: 1;
@@ -23,7 +23,7 @@ style.textContent = `
     z-index: 10;
   }
   to {
-    transform: rotateY(-90deg);
+    transform: rotateY(90deg);
     opacity: 1;
     box-shadow: none;
     z-index: 1;
