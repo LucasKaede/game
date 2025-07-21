@@ -38,7 +38,7 @@ body, input, button, div, span, p {
   top: 0;
   right: 0;
   width: 100%;
-  height: calc(100% - 40px);
+  height: calc(100% - 30px);
   padding: 10px;
   box-sizing: border-box;
   z-index: 1;
@@ -55,7 +55,7 @@ body, input, button, div, span, p {
   position: absolute;
   bottom: 0px;  /* ← ここを小さくするほど下に寄る */
   left: 10px;
-  width: calc(100% - 20px);
+  width: calc(100% - 0px);
   z-index: 2;
   padding: 5px;
   background: black;
