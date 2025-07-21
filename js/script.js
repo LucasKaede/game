@@ -55,7 +55,7 @@ function runFlipAnimationOpen(callback) {
   }, { once: true });
 }
 
-// 閉じるアニメーション（retryページなどで自動的に呼び出す想定）
+// 閉じるアニメーション
 function runFlipAnimationClose(callback) {
   const container = document.getElementById("novel-container");
   if (!container) {
@@ -80,30 +80,26 @@ const textArea = document.getElementById('text-area');
 const inputBox = document.getElementById('input-box');
 const background = document.getElementById('background');
 
-// ボタンは複数取得してループで処理
+// ボタン全取得
 const buttons = document.querySelectorAll('button[data-action]');
 
 buttons.forEach(button => {
   const action = button.dataset.action;
+
   if (action === "open") {
-    // アニメーションありで遷移処理
+    // アニメーション付きで次ページ遷移
     button.addEventListener("click", e => {
       e.preventDefault();
       handleNextPageTransition();
     });
   } else if (action === "plain") {
-    // アニメーションなしで遷移（例：戻る）
+    // 「戻る」ボタンは retry ページへ直接遷移（アニメなし）
     button.addEventListener("click", e => {
       e.preventDefault();
-      history.back();
+      window.location.href = '/game/retry.html';  // ここで retry ページへ戻す
     });
   }
 });
-
-// アニメーションなしでの単純遷移（例：ボタンなしで処理したい場合に使う想定）
-function simpleTransition(url) {
-  window.location.href = url;
-}
 
 let novelText = null;
 let charIndex = 0;
@@ -166,7 +162,7 @@ function typeWriter() {
   }
 }
 
-// ページ遷移（次のページへ）※アニメーションあり
+// ページ遷移（次のページへ）※アニメーション付き
 function handleNextPageTransition() {
   if (!inputBox) return;
   const input = inputBox.value.trim();
