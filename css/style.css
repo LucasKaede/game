@@ -7,8 +7,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
   }
+
+body, input, button, div, span, p {
+  color: white;
+}
 
   #novel-container {
     width: 375px;
