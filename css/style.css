@@ -7,21 +7,27 @@ html, body {
   display: flex;
   justify-content: center;   /* 横方向は中央 */
   align-items: flex-start;   /* 縦方向は上寄せ */
+  perspective: 1500px;       /* 3Dアニメ用 */
 }
 
 body, input, button, div, span, p {
   color: white;
 }
 
+/* アニメーション対象のコンテナ */
 #novel-container {
   width: 375px;
-  height: 90vh;  /* 画面の90%の高さに変更 */
+  height: 90vh;
   background-color: black;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   position: relative;
   margin-top: 20px;
+  transform-style: preserve-3d;         /* 子要素も3D空間に */
+  backface-visibility: hidden;          /* 背面を非表示 */
+  transform-origin: right center;       /* アニメで右側から開閉 */
 }
 
+/* 背景画像 */
 #background {
   position: absolute;
   width: 100%;
@@ -29,8 +35,10 @@ body, input, button, div, span, p {
   background-size: cover;
   background-position: center;
   z-index: 0;
+  backface-visibility: visible;         /* 背景は常に見える */
 }
 
+/* テキストエリア（縦書き） */
 #text-area {
   position: absolute;
   top: 0;
@@ -47,8 +55,11 @@ body, input, button, div, span, p {
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
+  transform-style: preserve-3d;         /* 自身の子要素にも3Dを継承 */
+  backface-visibility: visible;
 }
 
+/* 入力フォームまわり */
 #input-area {
   position: absolute;
   bottom: 0;
@@ -59,6 +70,8 @@ body, input, button, div, span, p {
   gap: 10px;
   box-sizing: border-box;
   z-index: 2;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
 }
 
 #input-box {
