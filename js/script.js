@@ -16,6 +16,7 @@ style.textContent = `
   }
 }
 
+
 @keyframes flipCloseRightToLeft {
   from {
     transform: rotateY(90deg);
