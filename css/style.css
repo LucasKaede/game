@@ -35,14 +35,14 @@ body, input, button, div, span, p {
   top: 0;
   right: 0;
   width: 100%;
-  height: calc(100% - 50px);
+  height: calc(100% - 70px);
   padding: 10px;
   box-sizing: border-box;
   z-index: 1;
   overflow-y: hidden;
   writing-mode: vertical-rl;
   text-orientation: upright;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
