@@ -1,5 +1,4 @@
 // アニメーション用CSS（開く／閉じる）を動的追加
-
 const style = document.createElement("style");
 style.textContent = `
 @keyframes flipOpenRightToLeft {
@@ -16,7 +15,6 @@ style.textContent = `
     z-index: 10;
   }
 }
-
 @keyframes flipCloseRightToLeft {
   from {
     transform: rotateY(90deg);
@@ -30,7 +28,12 @@ style.textContent = `
     box-shadow: none;
     z-index: 1;
   }
-}`;
+}
+#novel-container {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+`;
 document.head.appendChild(style);
 
 // 開くアニメーション
@@ -47,7 +50,6 @@ function runFlipAnimationOpen(callback) {
   container.style.position = "relative";
   container.style.zIndex = "1";
   document.body.style.perspective = "1500px";
-
   container.style.animation = "flipOpenRightToLeft 0.8s forwards ease-out";
 
   container.addEventListener("animationend", () => {
@@ -69,7 +71,6 @@ function runFlipAnimationClose(callback) {
   container.style.position = "relative";
   container.style.zIndex = "10";
   document.body.style.perspective = "1500px";
-
   container.style.animation = "flipCloseRightToLeft 0.8s forwards ease-out";
 
   container.addEventListener("animationend", () => {
@@ -109,7 +110,7 @@ fetch("/game/js/noveltext.json")
     waitForAnimationAndStartText();
   });
 
-// ページ読み込み時に閉じるアニメーション
+// 初期アニメーション＋テキスト描画
 function waitForAnimationAndStartText() {
   runFlipAnimationClose(() => {
     if (novelText) typeWriter();
@@ -147,7 +148,7 @@ function typeWriter() {
   }
 }
 
-// ページ遷移処理（次のページへ）
+// ページ遷移（次のページへ）
 function handleNextPageTransition() {
   if (!inputBox) return;
   const input = inputBox.value.trim();
@@ -181,7 +182,7 @@ function handleNextPageTransition() {
   }
 }
 
-// ボタン共通イベント処理
+// ボタンイベント（data-action に応じて処理）
 document.querySelectorAll('button[data-action]').forEach(button => {
   button.addEventListener('click', e => {
     e.preventDefault();
