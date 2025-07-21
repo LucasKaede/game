@@ -1,86 +1,18 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>そして僕は彼女を◯◯した</title>
-    <style>
-        :root {
-            --input-width: 100px; /* フォームの幅を変えるための変数 */
-            --input-height: 50px; /* フォームの高さを変えるための変数 */
-            --intro-padding-left: 60vw; /* "そして僕は彼女を"の左パディングを変えるための変数 */
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            height: 100vh;
-            background-color: black; /* 背景色を黒に設定 */
-            color: white; /* テキストの色を白に設定 */
-        }
-        .image-container {
-            margin-bottom: 20px;
-        }
-        .intro-wrapper {
-            display: flex;
-            justify-content: flex-start; /* テキストを左端に寄せる */
-            width: 100%; /* 親要素の幅に合わせる */
-            padding-left: var(--intro-padding-left); /* 左端との間隔を設定 */
-            margin-bottom: 10px;
-        }
-        .form-container {
-            display: flex;
-            align-items: flex-end; /* 子要素を下に揃える */
-            margin-bottom: 20px;
-        }
-        .form-container input {
-            margin-right: 10px; /* フォームとAAの間のスペース */
-            width: var(--input-width); /* フォームの幅を変数で指定 */
-            height: var(--input-height); /* フォームの高さを変数で指定 */
-            background-color: black; /* フォームの背景色を黒に設定 */
-            font-size: 50px; /* フォーム内の文字サイズを指定 */
-            color: white; /* フォーム内の文字色を白に設定 */
-            border: 1px solid #ccc; /* フォームの境界線 */
-            padding: 5px; /* フォーム内のパディング */
-        }
-        .form-container span {
-            align-self: flex-end; /* span要素を下に配置 */
-        }
-        .form-container input::placeholder {
-            color: gray; /* プレースホルダーの色を灰色に設定 */
-        }
-        #story {
-            margin-top: 20px; /* ストーリー表示エリアの上部マージン */
-            text-align: center; /* テキストを中央揃え */
-        }
-        button {
-            background-color: black; /* ボタンの背景色を黒に設定 */
-            color: white; /* ボタンの文字色を白に設定 */
-            border: 1px solid white; /* ボタンの境界線を白に設定 */
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #333; /* ボタンをホバーしたときの背景色を少し明るく設定 */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, height=428, initial-scale=1.0">
+  <title>ホラーノベル</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="image-container">
-        <img id="" src="https://lucaskaede.github.io/game/img/woman.jpg" alt="woman">
-    </div>
-    <div class="intro-wrapper">
-        <div class="intro">そして僕は彼女を</div>
-    </div>
-    <div class="form-container">
-        <input type="text" id="inputField" maxlength="2" placeholder="" size="1">
-        <span>した</span>
-    </div>
-    <button onclick="generateStory()">生成</button>
-    <div id="story"></div>
-
-    <script src="https://lucaskaede.github.io/game/js/script.js"></script>
+  <div id="novel-container">
+    <div id="background"></div>
+    <div id="text-area"></div>
+    <input type="text" id="input-box" placeholder="入力してください...">
+    <button id="next-page">次へ</button>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
