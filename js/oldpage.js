@@ -1,5 +1,5 @@
-window.addEventListener("load", () => {
-  console.log("ページロード完了");
+window.addEventListener("pageshow", (event) => {
+  console.log("pageshow event fired");
   const navEntries = performance.getEntriesByType("navigation");
   let navType = navEntries.length > 0 ? navEntries[0].type : null;
 
@@ -12,7 +12,8 @@ window.addEventListener("load", () => {
   }
   console.log("navigation type:", navType);
 
-  if (navType === "back_forward") {
+  if (navType === "back_forward" || event.persisted) {
+    // event.persistedはキャッシュからの復帰を示すフラグ
     const container = document.getElementById("novel-container");
     if (!container) {
       console.log("novel-containerが見つかりません");
