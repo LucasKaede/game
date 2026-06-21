@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>縦画面タクティクス v30 - 猿軍団＆バグ修正</title>
+<title>縦画面タクティクス v31 - 進行バグ修正版</title>
 <style>
     :root {
         --grass-base: #7cb342; --grass-dark: #558b2f;
@@ -183,7 +183,6 @@
             ] }
     };
 
-    // ★ ユーザー指定の猿軍団アイコン
     const EnemyClasses = {
         scrap: { icon: '🦧', job: 'オランウータン(突撃)', color: '#fa541c', maxHp: 35, move: 2, range: 2, atk: 8, aiType: 'scrap', desc: 'ターゲットの隣接マスにも爆風ダメージ。' },
         tank: { icon: '🦍', job: 'ゴリラ(重装)', color: '#595959', maxHp: 50, move: 1, range: 1, atk: 10, aiType: 'tank', desc: 'ターゲットの左右のマスにも巻き込みダメージ。' },
@@ -221,7 +220,9 @@
     };
 
     let isSyncing = false; let isAnimating = false;
-    let localCurrentTurnTracker = -1; let localStartX = 0; let localStartY = 0; let localHasMoved = false;
+    let localCurrentTurnTracker = -1; 
+    // ★ プレビュー用の変数を gameState に依存させず、ローカルで厳密に管理する
+    let localStartX = 0; let localStartY = 0; let localHasMoved = false;
 
     const getDist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     const getAllUnits = () => [...(gameState.players || []), ...(gameState.enemies || [])];
@@ -288,6 +289,10 @@
             spawnInitialEnemies();
             gameState.currentTurn = 0; gameState.previewAction = 'move'; 
             gameState.turnStartX = gameState.players[0].x; gameState.turnStartY = gameState.players[0].y;
+            
+            // ★ 初期化時にローカル変数もリセット
+            localCurrentTurnTracker = 0; localStartX = gameState.turnStartX; localStartY = gameState.turnStartY; localHasMoved = false;
+
             gameState.logs = "ゲームスタート！";
             pushGameState();
             
@@ -349,6 +354,19 @@
                 } else {
                     document.getElementById('lobby-container').style.display = 'none';
                     if(!gameState.obstacles) gameState.obstacles = []; 
+
+                    // ★ バグ修正：ターンが切り替わった瞬間に、ローカルのプレビュー情報をリセットする
+                    if(gameState.currentTurn !== localCurrentTurnTracker && gameState.currentTurn < gameState.players.length) {
+                        localCurrentTurnTracker = gameState.currentTurn;
+                        const cp = gameState.players[gameState.currentTurn];
+                        if(cp) { 
+                            localStartX = gameState.turnStartX; 
+                            localStartY = gameState.turnStartY; 
+                            localHasMoved = false; 
+                        }
+                    } else if (gameState.currentTurn === 99) { 
+                        localCurrentTurnTracker = 99; 
+                    }
 
                     document.getElementById('log').textContent = gameState.logs;
                     
@@ -438,10 +456,14 @@
             actionBar.innerHTML = `<div style="color:#1890ff; font-weight:bold;">味方（${cp.job}）が操作中...</div>`; return; 
         }
         
-        const isPreviewing = (cp.x !== gameState.turnStartX || cp.y !== gameState.turnStartY);
-        if (isPreviewing) {
+        // ★ 判定にローカル変数を使用
+        if (localHasMoved) {
             const cancelBtn = createHoverActionButton(`戻る`, (e) => { 
-                e.stopPropagation(); cp.x = gameState.turnStartX; cp.y = gameState.turnStartY; gameState.previewAction = 'move'; pushGameState(); updateBoard(); 
+                e.stopPropagation(); 
+                cp.x = gameState.turnStartX; cp.y = gameState.turnStartY; 
+                gameState.previewAction = 'move'; 
+                localHasMoved = false; localStartX = gameState.turnStartX; localStartY = gameState.turnStartY;
+                pushGameState(); updateBoard(); 
             }, 'キャンセル', '移動をキャンセルして元の位置に戻ります。', false, false, "cancel-btn");
             actionBar.appendChild(cancelBtn);
         } else {
@@ -471,7 +493,6 @@
             if(!wrapper) return;
             if (unit.hp <= 0) { 
                 if(unit.type === 'enemy') { wrapper.style.display = 'none'; return; } 
-                // ★ 墓に変更
                 charDiv.textContent = '🪦'; charDiv.classList.add('downed'); hpBar.style.width = '0%';
             } else {
                 charDiv.textContent = unit.icon; charDiv.classList.remove('downed');
@@ -502,8 +523,10 @@
                     const cell = document.getElementById(`cell-${x}-${y}`);
                     
                     if (gameState.previewAction === 'move') {
-                        let startPointX = (cp.controller === clientId || cp.isCpu) ? gameState.turnStartX : cp.x;
-                        let startPointY = (cp.controller === clientId || cp.isCpu) ? gameState.turnStartY : cp.y;
+                        // ★ 描画判定にローカル変数を使用
+                        let startPointX = (cp.controller === clientId) ? localStartX : cp.x;
+                        let startPointY = (cp.controller === clientId) ? localStartY : cp.y;
+                        if(cp.isCpu) { startPointX = gameState.turnStartX; startPointY = gameState.turnStartY; }
                         
                         const moveDist = getDist({x: startPointX, y: startPointY}, {x, y});
                         const hasOtherUnit = getAllUnits().some(u => u.hp > 0 && u.x === x && u.y === y && u.id !== cp.id);
@@ -572,6 +595,7 @@
 
         if (gameState.previewAction === 'move' && cell.classList.contains('move-highlight')) {
             cp.x = x; cp.y = y; 
+            localHasMoved = true; // ★
             gameState.previewAction = cp.abilities[0].currentCd === 0 ? 0 : (cp.abilities[1].currentCd === 0 ? 1 : 'move');
             logMsg(`${cp.job}が移動プレビュー中。`);
             pushGameState(); updateBoard(); 
@@ -586,7 +610,6 @@
             logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1; 
             if(ab.maxUses !== undefined) ab.currentUses--; 
 
-            // ★ 修正：味方と敵を厳格に区別する
             let targets = [];
             if (ab.aoe === 'shield_all') targets = gameState.players.filter(p => p.hp > 0);
             else if (ab.aoe === 'cross') targets = getAllUnits().filter(u => getDist({x,y}, u) <= 1 && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0)));
@@ -598,7 +621,6 @@
                     if(t && (ab.type === 'heal' ? (t.type === 'player' && t.hp > 0) : (t.type === 'enemy' && t.hp > 0))) targets.push(t);
                 }
             } else {
-                // 単体指定スキルの利敵バグを修正
                 targets = getAllUnits().filter(u => u.x === x && u.y === y && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0))); 
             }
 
@@ -638,6 +660,10 @@
             gameState.turnStartX = cp.x;
             gameState.turnStartY = cp.y;
             gameState.previewAction = 'move';
+            
+            // ★ AIと自分の同期のためにローカル変数も同期
+            localStartX = cp.x; localStartY = cp.y; localHasMoved = false;
+            
             cp.abilities.forEach(ab => { if (ab.currentCd > 0) ab.currentCd--; });
             logMsg('移動、または行動を選んでください'); pushGameState();
         }
@@ -690,9 +716,9 @@
         if (isHealing) {
             if (dToT <= 3) score += 40; if (dToT <= 1) score -= 20; 
         } else {
-            if(cp.job.includes('タンク')) { if(dToT === 1) score += 50; } 
-            else if(cp.job.includes('DPS')) { if(dToT === 2) score += 50; if(dToT === 1) score -= 30; } 
-            else if(cp.job.includes('サポート')) { if(dToT >= 3) score += 50; if(dToT <= 2) score -= 30; }
+            if(cp.job.includes('タンク') || cp.job === '水忍者' || cp.job === '氷忍者' || cp.job === '嵐忍者' || cp.job === '影忍者') { if(dToT === 1) score += 50; } 
+            else if(cp.job.includes('DPS') || cp.job === '火忍者' || cp.job === '雷忍者') { if(dToT === 2) score += 50; if(dToT === 1) score -= 30; } 
+            else { if(dToT >= 3) score += 50; if(dToT <= 2) score -= 30; }
         }
         return score;
     }
@@ -747,7 +773,8 @@
             if(getDist(cp, target) <= ab.range && ab.currentCd <= 0) {
                 gameState.previewAction = actionIdx; syncUnitsVisuals(); pushGameState();
                 await new Promise(r=>setTimeout(r,400)); 
-                logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1; if(ab.maxUses !== undefined) ab.currentUses--;
+                logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1;
+                if(ab.maxUses !== undefined) ab.currentUses--;
                 
                 if (ab.aoe) {
                     let targets = []; let x = target.x, y = target.y;
