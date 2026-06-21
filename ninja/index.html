@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>縦画面タクティクス v32 - CPU利敵バグ修正</title>
+<title>縦画面タクティクス v33 - マルチ進行バグ完全修正</title>
 <style>
     :root {
         --grass-base: #7cb342; --grass-dark: #558b2f;
@@ -183,6 +183,7 @@
             ] }
     };
 
+    // 猿軍団
     const EnemyClasses = {
         scrap: { icon: '🦧', job: 'オランウータン(突撃)', color: '#fa541c', maxHp: 35, move: 2, range: 2, atk: 8, aiType: 'scrap', desc: 'ターゲットの隣接マスにも爆風ダメージ。' },
         tank: { icon: '🦍', job: 'ゴリラ(重装)', color: '#595959', maxHp: 50, move: 1, range: 1, atk: 10, aiType: 'tank', desc: 'ターゲットの左右のマスにも巻き込みダメージ。' },
@@ -231,6 +232,7 @@
         return true;
     };
     
+    // AI処理を発動してよいか判定するホスト（誰か1人）
     function amIHost() {
         if(gameState.status !== 'playing') return true;
         if(!gameState.players) return true;
@@ -440,7 +442,7 @@
     function renderActionBar() {
         actionBar.innerHTML = '';
         if (gameState.currentTurn === 99 || gameState.currentTurn >= gameState.players.length) { 
-            actionBar.innerHTML = '<div style="color:#fadb14; font-weight:bold;">味方の通信 または 敵の行動を待機中...</div>'; return; 
+            actionBar.innerHTML = '<div style="color:#fadb14; font-weight:bold;">味方通信待機 または 敵行動中...</div>'; return; 
         }
         
         const cp = gameState.players[gameState.currentTurn];
@@ -518,14 +520,14 @@
                     const cell = document.getElementById(`cell-${x}-${y}`);
                     
                     if (gameState.previewAction === 'move') {
-                        let startPointX = (cp.controller === clientId || cp.isCpu) ? localStartX : cp.x;
-                        let startPointY = (cp.controller === clientId || cp.isCpu) ? localStartY : cp.y;
+                        let startPointX = (cp.controller === clientId || cp.isCpu) ? gameState.turnStartX : cp.x;
+                        let startPointY = (cp.controller === clientId || cp.isCpu) ? gameState.turnStartY : cp.y;
                         
                         const moveDist = getDist({x: startPointX, y: startPointY}, {x, y});
                         const hasOtherUnit = getAllUnits().some(u => u.hp > 0 && u.x === x && u.y === y && u.id !== cp.id);
                         const hasDownedPlayer = gameState.players.some(p => p.hp <= 0 && p.x === x && p.y === y);
 
-                        if (moveDist > 0 && moveDist <= cp.move) {
+                        if (moveDist >= 0 && moveDist <= cp.move) {
                             cell.classList.add('range-highlight');
                             if (!hasOtherUnit && !hasDownedPlayer) cell.classList.add('move-highlight');
                         }
@@ -546,7 +548,6 @@
                         else if (ab.aoe === 'line') inAoeRange = (x === cp.x || y === cp.y) && dist > 0 && dist <= ab.range;
                         else inAoeRange = (dist >= 0 && dist <= ab.range);
 
-                        // ★ 修正：射程0の自己ヒール（盾など）を正しくハイライト
                         if (ab.range === 0 && x === cp.x && y === cp.y) { 
                             cell.classList.add(ab.type === 'heal' ? 'heal-highlight' : 'atk-highlight'); 
                             continue; 
@@ -618,7 +619,6 @@
                     if(t && (ab.type === 'heal' ? (t.type === 'player' && t.hp > 0) : (t.type === 'enemy' && t.hp > 0))) targets.push(t);
                 }
             } else {
-                // ★ 修正：手動でも敵をヒールしないように厳密にフィルタ
                 targets = getAllUnits().filter(u => u.x === x && u.y === y && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0))); 
             }
 
@@ -641,44 +641,54 @@
     }
 
     // ==========================================
-    // ターン管理 ＆ 味方AI強化
+    // ★ 修正：次ターン管理を「アクションを起こした人」が責任を持って同期する
     // ==========================================
-    function setupNextPlayerTurn() {
-        const cp = gameState.players[gameState.currentTurn]; 
-        if (cp && cp.hp <= 0) { 
-            if(amIHost()) { gameState.currentTurn++; if (gameState.currentTurn >= gameState.players.length) setupEnemyTurn(); else setupNextPlayerTurn(); }
-            return; 
-        }
-        if (cp && cp.stunned > 0) {
-            if(amIHost()) { cp.stunned--; logMsg(`${cp.job}はスタンして動けない！`); pushGameState(); setTimeout(() => { nextTurn(); }, 1000); }
-            return;
-        }
-        
-        if (amIHost()) {
-            gameState.turnStartX = cp.x;
-            gameState.turnStartY = cp.y;
-            gameState.previewAction = 'move';
-            
-            localStartX = cp.x; localStartY = cp.y; localHasMoved = false;
-            
-            cp.abilities.forEach(ab => { if (ab.currentCd > 0) ab.currentCd--; });
-            logMsg('移動、または行動を選んでください'); pushGameState();
-        }
-
-        if(cp.isCpu && amIHost()) { setTimeout(() => { executeAllyAI(); }, 1000); }
-    }
-
     function nextTurn() {
         const cp = gameState.players[gameState.currentTurn];
         if(cp && cp.hp > 0) { const charDiv = document.getElementById(`char-${cp.id}`); if(charDiv) { charDiv.classList.add('done'); charDiv.classList.remove('active'); } }
         
         gameState.currentTurn++;
-        if (gameState.currentTurn >= gameState.players.length) setupEnemyTurn(); else setupNextPlayerTurn(); 
+        
+        if (gameState.currentTurn >= gameState.players.length) {
+            setupEnemyTurn(); 
+        } else { 
+            setupNextPlayerTurn(); 
+        }
+    }
+
+    function setupNextPlayerTurn() {
+        const cp = gameState.players[gameState.currentTurn]; 
+        
+        // ターン飛ばし処理
+        if (cp && cp.hp <= 0) { 
+            gameState.currentTurn++; 
+            if (gameState.currentTurn >= gameState.players.length) setupEnemyTurn(); else setupNextPlayerTurn(); 
+            return; 
+        }
+        if (cp && cp.stunned > 0) {
+            cp.stunned--; logMsg(`${cp.job}はスタンして動けない！`); 
+            pushGameState(); 
+            setTimeout(() => { nextTurn(); }, 1000); 
+            return;
+        }
+        
+        // ★ ホスト権限に関わらず、ターンを回した人が次ターンのセットアップを行う
+        gameState.turnStartX = cp.x;
+        gameState.turnStartY = cp.y;
+        gameState.previewAction = 'move';
+        
+        localStartX = cp.x; localStartY = cp.y; localHasMoved = false;
+        
+        cp.abilities.forEach(ab => { if (ab.currentCd > 0) ab.currentCd--; });
+        logMsg('移動、または行動を選んでください'); 
+        
+        pushGameState();
+
+        // ★ AIの思考開始だけは重複防止のためホストのみが実行する
+        if(cp.isCpu && amIHost()) { setTimeout(() => { executeAllyAI(); }, 1000); }
     }
 
     function setupEnemyTurn() {
-        if(!amIHost()) return; 
-
         if (gameState.enemies.every(e => e.hp <= 0)) {
             gameState.currentWave++;
             if(gameState.currentWave >= gameState.waves.length) {
@@ -690,10 +700,16 @@
             spawnInitialEnemies(); gameState.currentTurn = 0;
             document.getElementById('wave-announce').textContent = `WAVE ${gameState.currentWave + 1}`; document.getElementById('wave-announce').style.display = 'block';
             setTimeout(() => { document.getElementById('wave-announce').style.display = 'none'; }, 2000);
+            
             setupNextPlayerTurn();
         } else {
-            gameState.currentTurn = 99; localCurrentTurnTracker = 99; logMsg("猿軍団の猛攻を凌げ！"); pushGameState();
-            setTimeout(() => { executeEnemyAI(); }, 500);
+            gameState.currentTurn = 99; localCurrentTurnTracker = 99; logMsg("猿軍団の猛攻を凌げ！"); 
+            pushGameState();
+            
+            // ★ AIの思考開始だけは重複防止のためホストのみが実行する
+            if(amIHost()) {
+                setTimeout(() => { executeEnemyAI(); }, 500);
+            }
         }
     }
 
@@ -746,8 +762,7 @@
         if(!target) {
             let minDist = 999; gameState.enemies.filter(e=>e.hp>0).forEach(e => { let d = getDist(cp, e); if(d < minDist) { minDist = d; target = e; } });
             
-            // ★ 修正：AIが敵を狙う時、ヒールスキル（actionIdx=1など）を絶対に使わないようにフィルタリング
-            actionIdx = 0; // デフォルトは通常攻撃
+            actionIdx = 0; 
             if (cp.abilities[2] && cp.abilities[2].type === 'attack' && cp.abilities[2].currentCd <= 0) {
                 actionIdx = 2;
             } else if (cp.abilities[1] && cp.abilities[1].type === 'attack' && cp.abilities[1].currentCd <= 0) {
@@ -777,8 +792,7 @@
             if(getDist(cp, target) <= ab.range && ab.currentCd <= 0) {
                 gameState.previewAction = actionIdx; syncUnitsVisuals(); pushGameState();
                 await new Promise(r=>setTimeout(r,400)); 
-                logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1;
-                if(ab.maxUses !== undefined) ab.currentUses--;
+                logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1; if(ab.maxUses !== undefined) ab.currentUses--;
                 
                 if (ab.aoe) {
                     let targets = []; let x = target.x, y = target.y;
