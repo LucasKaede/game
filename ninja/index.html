@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>縦画面タクティクス v33 - マルチ進行バグ完全修正</title>
+<title>縦画面タクティクス v34 - 通信フリーズ完全解決版</title>
 <style>
     :root {
         --grass-base: #7cb342; --grass-dark: #558b2f;
@@ -183,7 +183,6 @@
             ] }
     };
 
-    // 猿軍団
     const EnemyClasses = {
         scrap: { icon: '🦧', job: 'オランウータン(突撃)', color: '#fa541c', maxHp: 35, move: 2, range: 2, atk: 8, aiType: 'scrap', desc: 'ターゲットの隣接マスにも爆風ダメージ。' },
         tank: { icon: '🦍', job: 'ゴリラ(重装)', color: '#595959', maxHp: 50, move: 1, range: 1, atk: 10, aiType: 'tank', desc: 'ターゲットの左右のマスにも巻き込みダメージ。' },
@@ -232,7 +231,6 @@
         return true;
     };
     
-    // AI処理を発動してよいか判定するホスト（誰か1人）
     function amIHost() {
         if(gameState.status !== 'playing') return true;
         if(!gameState.players) return true;
@@ -290,12 +288,9 @@
             gameState.currentTurn = 0; gameState.previewAction = 'move'; 
             gameState.turnStartX = gameState.players[0].x; gameState.turnStartY = gameState.players[0].y;
             
-            localCurrentTurnTracker = 0; localStartX = gameState.turnStartX; localStartY = gameState.turnStartY; localHasMoved = false;
-
+            localCurrentTurnTracker = -1; // 強制的にonValueを発火させるため
             gameState.logs = "ゲームスタート！";
             pushGameState();
-            
-            if(gameState.players[0].isCpu && amIHost()) setTimeout(executeAllyAI, 1000);
         }
     }
 
@@ -331,7 +326,7 @@
     }
 
     // ==========================================
-    // Firebase 受信
+    // Firebase 受信 ＆ AIトリガーの完全管理
     // ==========================================
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
@@ -354,16 +349,16 @@
                     document.getElementById('lobby-container').style.display = 'none';
                     if(!gameState.obstacles) gameState.obstacles = []; 
 
-                    if(gameState.currentTurn !== localCurrentTurnTracker && gameState.currentTurn < gameState.players.length) {
+                    let turnChanged = false;
+                    // ★ ターン進行の検知
+                    if(gameState.currentTurn !== localCurrentTurnTracker) {
+                        turnChanged = true;
                         localCurrentTurnTracker = gameState.currentTurn;
-                        const cp = gameState.players[gameState.currentTurn];
-                        if(cp) { 
+                        if(gameState.currentTurn < gameState.players.length) {
                             localStartX = gameState.turnStartX; 
                             localStartY = gameState.turnStartY; 
                             localHasMoved = false; 
                         }
-                    } else if (gameState.currentTurn === 99) { 
-                        localCurrentTurnTracker = 99; 
                     }
 
                     document.getElementById('log').textContent = gameState.logs;
@@ -378,7 +373,20 @@
                             document.getElementById('char-desc').textContent = activeP.desc;
                         }
                     }
+
                     rebuildDOMIfNeeded(); updateBoard();
+
+                    // ★ 状態変化に基づくAIのトリガー（ホストのみが実行）
+                    if (turnChanged) {
+                        if (gameState.currentTurn === 99) {
+                            if (amIHost()) setTimeout(executeEnemyAI, 500);
+                        } else if (gameState.currentTurn < gameState.players.length) {
+                            const cp = gameState.players[gameState.currentTurn];
+                            if (cp && cp.isCpu && amIHost()) {
+                                setTimeout(executeAllyAI, 1000);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -442,7 +450,7 @@
     function renderActionBar() {
         actionBar.innerHTML = '';
         if (gameState.currentTurn === 99 || gameState.currentTurn >= gameState.players.length) { 
-            actionBar.innerHTML = '<div style="color:#fadb14; font-weight:bold;">味方通信待機 または 敵行動中...</div>'; return; 
+            actionBar.innerHTML = '<div style="color:#fadb14; font-weight:bold;">味方の通信 または 敵の行動を待機中...</div>'; return; 
         }
         
         const cp = gameState.players[gameState.currentTurn];
@@ -520,8 +528,8 @@
                     const cell = document.getElementById(`cell-${x}-${y}`);
                     
                     if (gameState.previewAction === 'move') {
-                        let startPointX = (cp.controller === clientId || cp.isCpu) ? gameState.turnStartX : cp.x;
-                        let startPointY = (cp.controller === clientId || cp.isCpu) ? gameState.turnStartY : cp.y;
+                        let startPointX = (cp.controller === clientId || cp.isCpu) ? localStartX : cp.x;
+                        let startPointY = (cp.controller === clientId || cp.isCpu) ? localStartY : cp.y;
                         
                         const moveDist = getDist({x: startPointX, y: startPointY}, {x, y});
                         const hasOtherUnit = getAllUnits().some(u => u.hp > 0 && u.x === x && u.y === y && u.id !== cp.id);
@@ -641,7 +649,7 @@
     }
 
     // ==========================================
-    // ★ 修正：次ターン管理を「アクションを起こした人」が責任を持って同期する
+    // ★ 修正：次ターン管理（全員が更新可能にする）
     // ==========================================
     function nextTurn() {
         const cp = gameState.players[gameState.currentTurn];
@@ -659,7 +667,6 @@
     function setupNextPlayerTurn() {
         const cp = gameState.players[gameState.currentTurn]; 
         
-        // ターン飛ばし処理
         if (cp && cp.hp <= 0) { 
             gameState.currentTurn++; 
             if (gameState.currentTurn >= gameState.players.length) setupEnemyTurn(); else setupNextPlayerTurn(); 
@@ -667,25 +674,18 @@
         }
         if (cp && cp.stunned > 0) {
             cp.stunned--; logMsg(`${cp.job}はスタンして動けない！`); 
-            pushGameState(); 
-            setTimeout(() => { nextTurn(); }, 1000); 
+            pushGameState(); setTimeout(() => { nextTurn(); }, 1000); 
             return;
         }
         
-        // ★ ホスト権限に関わらず、ターンを回した人が次ターンのセットアップを行う
         gameState.turnStartX = cp.x;
         gameState.turnStartY = cp.y;
         gameState.previewAction = 'move';
-        
         localStartX = cp.x; localStartY = cp.y; localHasMoved = false;
         
         cp.abilities.forEach(ab => { if (ab.currentCd > 0) ab.currentCd--; });
         logMsg('移動、または行動を選んでください'); 
-        
         pushGameState();
-
-        // ★ AIの思考開始だけは重複防止のためホストのみが実行する
-        if(cp.isCpu && amIHost()) { setTimeout(() => { executeAllyAI(); }, 1000); }
     }
 
     function setupEnemyTurn() {
@@ -696,20 +696,14 @@
                 document.getElementById('wave-announce').textContent = "CLEAR!"; document.getElementById('wave-announce').style.display = 'block';
                 pushGameState(); return;
             }
-            
             spawnInitialEnemies(); gameState.currentTurn = 0;
             document.getElementById('wave-announce').textContent = `WAVE ${gameState.currentWave + 1}`; document.getElementById('wave-announce').style.display = 'block';
             setTimeout(() => { document.getElementById('wave-announce').style.display = 'none'; }, 2000);
             
             setupNextPlayerTurn();
         } else {
-            gameState.currentTurn = 99; localCurrentTurnTracker = 99; logMsg("猿軍団の猛攻を凌げ！"); 
+            gameState.currentTurn = 99; logMsg("猿軍団の猛攻を凌げ！"); 
             pushGameState();
-            
-            // ★ AIの思考開始だけは重複防止のためホストのみが実行する
-            if(amIHost()) {
-                setTimeout(() => { executeEnemyAI(); }, 500);
-            }
         }
     }
 
@@ -825,7 +819,6 @@
         isAnimating = false; nextTurn();
     }
 
-    // --- 敵AI ---
     function getDistanceGrid(targetX, targetY) {
         let grid = Array(ROWS).fill(null).map(()=>Array(COLS).fill(999));
         let queue = [{x: targetX, y: targetY, dist: 0}]; grid[targetY][targetX] = 0;
