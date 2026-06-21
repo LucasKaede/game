@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>縦画面タクティクス v29 - 9キャラ＆猿軍団</title>
+<title>縦画面タクティクス v30 - 猿軍団＆バグ修正</title>
 <style>
     :root {
         --grass-base: #7cb342; --grass-dark: #558b2f;
@@ -132,7 +132,6 @@
     const actionBar = document.getElementById('action-bar');
     const infoModal = document.getElementById('info-modal');
 
-    // ★ 9キャラクターへの拡張
     const PlayerClasses = {
         water: { icon: '💧', job: '水忍者', color: '#1890ff', maxHp: 40, move: 2, desc: '【タンク】超高HPの近接インファイター。',
             abilities: [
@@ -184,7 +183,7 @@
             ] }
     };
 
-    // ★ 猿軍団に変更
+    // ★ ユーザー指定の猿軍団アイコン
     const EnemyClasses = {
         scrap: { icon: '🦧', job: 'オランウータン(突撃)', color: '#fa541c', maxHp: 35, move: 2, range: 2, atk: 8, aiType: 'scrap', desc: 'ターゲットの隣接マスにも爆風ダメージ。' },
         tank: { icon: '🦍', job: 'ゴリラ(重装)', color: '#595959', maxHp: 50, move: 1, range: 1, atk: 10, aiType: 'tank', desc: 'ターゲットの左右のマスにも巻き込みダメージ。' },
@@ -472,7 +471,7 @@
             if(!wrapper) return;
             if (unit.hp <= 0) { 
                 if(unit.type === 'enemy') { wrapper.style.display = 'none'; return; } 
-                // ★ ダウンマークを墓に変更
+                // ★ 墓に変更
                 charDiv.textContent = '🪦'; charDiv.classList.add('downed'); hpBar.style.width = '0%';
             } else {
                 charDiv.textContent = unit.icon; charDiv.classList.remove('downed');
@@ -525,7 +524,6 @@
                         if(!ab) continue;
                         const dist = getDist(cp, {x, y});
                         
-                        // ★ 新スキルの範囲（十字・ライン・周囲）描画
                         let inAoeRange = false;
                         if (ab.aoe === 'cross') inAoeRange = getDist({x,y}, cp) <= ab.range;
                         else if (ab.aoe === 'around') inAoeRange = Math.abs(x - cp.x) <= 1 && Math.abs(y - cp.y) <= 1;
@@ -588,19 +586,20 @@
             logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1; 
             if(ab.maxUses !== undefined) ab.currentUses--; 
 
+            // ★ 修正：味方と敵を厳格に区別する
             let targets = [];
-            // ★ 新スキルの範囲計算
             if (ab.aoe === 'shield_all') targets = gameState.players.filter(p => p.hp > 0);
-            else if (ab.aoe === 'cross') targets = getAllUnits().filter(u => getDist({x,y}, u) <= 1 && (ab.type === 'heal' ? u.type === 'player' : (u.type === 'enemy' && u.hp > 0)));
-            else if (ab.aoe === 'around') targets = getAllUnits().filter(u => Math.abs(x - u.x) <= 1 && Math.abs(y - u.y) <= 1 && (ab.type === 'heal' ? u.type === 'player' : (u.type === 'enemy' && u.hp > 0)));
+            else if (ab.aoe === 'cross') targets = getAllUnits().filter(u => getDist({x,y}, u) <= 1 && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0)));
+            else if (ab.aoe === 'around') targets = getAllUnits().filter(u => Math.abs(x - u.x) <= 1 && Math.abs(y - u.y) <= 1 && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0)));
             else if (ab.aoe === 'line') {
                 const dx = Math.sign(x - cp.x); const dy = Math.sign(y - cp.y);
                 for(let i=1; i<=ab.range; i++) {
                     let t = getAllUnits().find(u => u.x === cp.x + dx*i && u.y === cp.y + dy*i);
-                    if(t && (ab.type === 'heal' ? t.type === 'player' : (t.type === 'enemy' && t.hp > 0))) targets.push(t);
+                    if(t && (ab.type === 'heal' ? (t.type === 'player' && t.hp > 0) : (t.type === 'enemy' && t.hp > 0))) targets.push(t);
                 }
             } else {
-                targets = getAllUnits().filter(u => u.x === x && u.y === y && (ab.type === 'heal' ? u.hp > 0 : u.hp > 0)); 
+                // 単体指定スキルの利敵バグを修正
+                targets = getAllUnits().filter(u => u.x === x && u.y === y && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0))); 
             }
 
             targets.forEach(t => {
@@ -621,6 +620,9 @@
         }
     }
 
+    // ==========================================
+    // ターン管理 ＆ 味方AI強化
+    // ==========================================
     function setupNextPlayerTurn() {
         const cp = gameState.players[gameState.currentTurn]; 
         if (cp && cp.hp <= 0) { 
@@ -667,7 +669,7 @@
             setTimeout(() => { document.getElementById('wave-announce').style.display = 'none'; }, 2000);
             setupNextPlayerTurn();
         } else {
-            gameState.currentTurn = 99; logMsg("猿軍団の猛攻を凌げ！"); pushGameState();
+            gameState.currentTurn = 99; localCurrentTurnTracker = 99; logMsg("猿軍団の猛攻を凌げ！"); pushGameState();
             setTimeout(() => { executeEnemyAI(); }, 500);
         }
     }
@@ -747,7 +749,6 @@
                 await new Promise(r=>setTimeout(r,400)); 
                 logMsg(`${cp.job}の${ab.name}！`); ab.currentCd = ab.cdMax + 1; if(ab.maxUses !== undefined) ab.currentUses--;
                 
-                // CPU用のAOE実行（簡略化して自身で直接発動）
                 if (ab.aoe) {
                     let targets = []; let x = target.x, y = target.y;
                     if (ab.aoe === 'shield_all') targets = gameState.players.filter(p => p.hp > 0);
