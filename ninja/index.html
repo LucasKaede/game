@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>縦画面タクティクス v31 - 進行バグ修正版</title>
+<title>縦画面タクティクス v32 - CPU利敵バグ修正</title>
 <style>
     :root {
         --grass-base: #7cb342; --grass-dark: #558b2f;
@@ -220,9 +220,7 @@
     };
 
     let isSyncing = false; let isAnimating = false;
-    let localCurrentTurnTracker = -1; 
-    // ★ プレビュー用の変数を gameState に依存させず、ローカルで厳密に管理する
-    let localStartX = 0; let localStartY = 0; let localHasMoved = false;
+    let localCurrentTurnTracker = -1; let localStartX = 0; let localStartY = 0; let localHasMoved = false;
 
     const getDist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     const getAllUnits = () => [...(gameState.players || []), ...(gameState.enemies || [])];
@@ -290,7 +288,6 @@
             gameState.currentTurn = 0; gameState.previewAction = 'move'; 
             gameState.turnStartX = gameState.players[0].x; gameState.turnStartY = gameState.players[0].y;
             
-            // ★ 初期化時にローカル変数もリセット
             localCurrentTurnTracker = 0; localStartX = gameState.turnStartX; localStartY = gameState.turnStartY; localHasMoved = false;
 
             gameState.logs = "ゲームスタート！";
@@ -355,7 +352,6 @@
                     document.getElementById('lobby-container').style.display = 'none';
                     if(!gameState.obstacles) gameState.obstacles = []; 
 
-                    // ★ バグ修正：ターンが切り替わった瞬間に、ローカルのプレビュー情報をリセットする
                     if(gameState.currentTurn !== localCurrentTurnTracker && gameState.currentTurn < gameState.players.length) {
                         localCurrentTurnTracker = gameState.currentTurn;
                         const cp = gameState.players[gameState.currentTurn];
@@ -456,7 +452,6 @@
             actionBar.innerHTML = `<div style="color:#1890ff; font-weight:bold;">味方（${cp.job}）が操作中...</div>`; return; 
         }
         
-        // ★ 判定にローカル変数を使用
         if (localHasMoved) {
             const cancelBtn = createHoverActionButton(`戻る`, (e) => { 
                 e.stopPropagation(); 
@@ -523,16 +518,14 @@
                     const cell = document.getElementById(`cell-${x}-${y}`);
                     
                     if (gameState.previewAction === 'move') {
-                        // ★ 描画判定にローカル変数を使用
-                        let startPointX = (cp.controller === clientId) ? localStartX : cp.x;
-                        let startPointY = (cp.controller === clientId) ? localStartY : cp.y;
-                        if(cp.isCpu) { startPointX = gameState.turnStartX; startPointY = gameState.turnStartY; }
+                        let startPointX = (cp.controller === clientId || cp.isCpu) ? localStartX : cp.x;
+                        let startPointY = (cp.controller === clientId || cp.isCpu) ? localStartY : cp.y;
                         
                         const moveDist = getDist({x: startPointX, y: startPointY}, {x, y});
                         const hasOtherUnit = getAllUnits().some(u => u.hp > 0 && u.x === x && u.y === y && u.id !== cp.id);
                         const hasDownedPlayer = gameState.players.some(p => p.hp <= 0 && p.x === x && p.y === y);
 
-                        if (moveDist >= 0 && moveDist <= cp.move) {
+                        if (moveDist > 0 && moveDist <= cp.move) {
                             cell.classList.add('range-highlight');
                             if (!hasOtherUnit && !hasDownedPlayer) cell.classList.add('move-highlight');
                         }
@@ -553,7 +546,11 @@
                         else if (ab.aoe === 'line') inAoeRange = (x === cp.x || y === cp.y) && dist > 0 && dist <= ab.range;
                         else inAoeRange = (dist >= 0 && dist <= ab.range);
 
-                        if (ab.range === 0 && x === cp.x && y === cp.y) { cell.classList.add(ab.type === 'heal' ? 'heal-highlight' : 'atk-highlight'); continue; }
+                        // ★ 修正：射程0の自己ヒール（盾など）を正しくハイライト
+                        if (ab.range === 0 && x === cp.x && y === cp.y) { 
+                            cell.classList.add(ab.type === 'heal' ? 'heal-highlight' : 'atk-highlight'); 
+                            continue; 
+                        }
 
                         if (inAoeRange) {
                             cell.classList.add('range-highlight');
@@ -595,7 +592,7 @@
 
         if (gameState.previewAction === 'move' && cell.classList.contains('move-highlight')) {
             cp.x = x; cp.y = y; 
-            localHasMoved = true; // ★
+            localHasMoved = true; 
             gameState.previewAction = cp.abilities[0].currentCd === 0 ? 0 : (cp.abilities[1].currentCd === 0 ? 1 : 'move');
             logMsg(`${cp.job}が移動プレビュー中。`);
             pushGameState(); updateBoard(); 
@@ -621,6 +618,7 @@
                     if(t && (ab.type === 'heal' ? (t.type === 'player' && t.hp > 0) : (t.type === 'enemy' && t.hp > 0))) targets.push(t);
                 }
             } else {
+                // ★ 修正：手動でも敵をヒールしないように厳密にフィルタ
                 targets = getAllUnits().filter(u => u.x === x && u.y === y && (ab.type === 'heal' ? (u.type === 'player' && u.hp > 0) : (u.type === 'enemy' && u.hp > 0))); 
             }
 
@@ -661,7 +659,6 @@
             gameState.turnStartY = cp.y;
             gameState.previewAction = 'move';
             
-            // ★ AIと自分の同期のためにローカル変数も同期
             localStartX = cp.x; localStartY = cp.y; localHasMoved = false;
             
             cp.abilities.forEach(ab => { if (ab.currentCd > 0) ab.currentCd--; });
@@ -748,7 +745,14 @@
         
         if(!target) {
             let minDist = 999; gameState.enemies.filter(e=>e.hp>0).forEach(e => { let d = getDist(cp, e); if(d < minDist) { minDist = d; target = e; } });
-            if (!isHealing && cp.abilities[1].currentCd <= 0) actionIdx = 1; else actionIdx = 0;
+            
+            // ★ 修正：AIが敵を狙う時、ヒールスキル（actionIdx=1など）を絶対に使わないようにフィルタリング
+            actionIdx = 0; // デフォルトは通常攻撃
+            if (cp.abilities[2] && cp.abilities[2].type === 'attack' && cp.abilities[2].currentCd <= 0) {
+                actionIdx = 2;
+            } else if (cp.abilities[1] && cp.abilities[1].type === 'attack' && cp.abilities[1].currentCd <= 0) {
+                actionIdx = 1;
+            }
         }
         
         if(target) {
